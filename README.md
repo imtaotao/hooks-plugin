@@ -5,7 +5,7 @@
 
 </div>
 
-Plugin system built through various hooks, a very small library inspired by [tapable](https://github.com/webpack/tapable).
+Plugin system built through various hooks, a very small library, inspired by [tapable](https://github.com/webpack/tapable).
 
 
 ## Usage
