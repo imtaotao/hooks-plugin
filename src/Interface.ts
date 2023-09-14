@@ -5,7 +5,7 @@ export type Callback<T, C, K> = (this: C, ...args: ArgsType<T>) => K;
 export interface Plugin<T extends Record<string, any>> {
   name: string;
   version?: string;
-  hooks: {
+  hooks?: {
     [k in keyof T]?: Parameters<T[k]["on"]>[0];
   };
   onceHooks?: {

@@ -158,7 +158,7 @@ describe("PluginSystem", () => {
         },
       },
     };
-    const spy = jest.spyOn(obj.hooks, "a");
+    const spy = jest.spyOn(obj.hooks!, "a");
     plugin.usePlugin(obj);
     plugin.hooks.a.emit("chen");
 
