@@ -10,7 +10,7 @@ describe("AsyncParallelHook", () => {
       // `AsyncWaterfallHook` will be queued for execution
       waterfall: new AsyncWaterfallHook<{ n: number }>(),
       // `AsyncParallelHook` will be executed in parallel
-      parallel: new AsyncParallelHook<{ n: number }>(),
+      parallel: new AsyncParallelHook<[{ n: number }]>(),
     });
 
     plugin.usePlugin({
@@ -105,9 +105,10 @@ describe("AsyncParallelHook", () => {
     const task1 = plugin.hooks.parallel.emit(data1);
 
     expect(data1.n).toBe(0);
+    expect(typeof task1.then === "function").toBe(true);
     const res1 = await task1;
+    expect(res1).toBe(undefined);
     expect(data1.n).toBe(4);
-    expect(res1 === data1).toBe(true);
 
     // waterfall hook
     const data2 = { n: 0 };

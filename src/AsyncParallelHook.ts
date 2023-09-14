@@ -1,25 +1,19 @@
 import { SyncHook } from "./SyncHook";
-import { assert, isPlainObject } from "./Utils";
-
-export class AsyncParallelHook<
-  T extends Record<any, unknown>,
-  C = null
-> extends SyncHook<[T], C, void | Promise<void>> {
+import type { ArgsType } from "./Interface";
+export class AsyncParallelHook<T, C = null> extends SyncHook<
+  T,
+  C,
+  void | Promise<void>
+> {
   constructor(context?: C, type = "AsyncParallelHook") {
     super(context, type);
   }
 
-  emit(data: T) {
-    assert(
-      isPlainObject(data),
-      `"${this.type}" hook response data must be an object.`
-    );
+  emit(...data: ArgsType<T>) {
     const taskList: Array<unknown> = [];
     for (const fn of this.listeners) {
-      taskList.push(
-        Promise.resolve(data).then((res) => fn.call(this.context, res))
-      );
+      taskList.push(Promise.resolve().then(() => fn.apply(this.context, data)));
     }
-    return Promise.all(taskList).then(() => data);
+    return Promise.all(taskList).then(() => {});
   }
 }

@@ -45,6 +45,7 @@ const plSys = new PluginSystem({
   // 2. The second generic is the `this`` type of the hook function
   a: new AsyncHook<[number, number], string>("context"),
 
+  // The parameter type of `AsyncWaterfallHook` and `SyncWaterfallHook` must be an object
   b: new AsyncWaterfallHook<{ value: number }, string>("context"),
 });
 
@@ -60,7 +61,7 @@ plSys.usePlugin({
     async b(data) {
       console.log(this); // 'context'
       console.log(data); // { value: 1 }
-      return data;
+      return data;  // Must return values of the same type
     },
   },
 });

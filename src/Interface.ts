@@ -1,4 +1,4 @@
-export type ArgsType<T> = T extends Array<any> ? T : Array<any>;
+export type ArgsType<T> = T extends Array<any> ? T : Array<unknown>;
 export type CallbackReturnType<T> = T | false | Promise<T | false>;
 export type Callback<T, C, K> = (this: C, ...args: ArgsType<T>) => K;
 

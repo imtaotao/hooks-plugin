@@ -294,9 +294,9 @@ describe("PluginSystem", () => {
     const plugin = new PluginSystem({
       syncHook: new SyncHook<[string, number]>(),
       asyncHook: new AsyncHook<[string, number]>(),
+      asyncParallelHook: new AsyncParallelHook<[{ value: number }]>(),
       syncWaterfallHook: new SyncWaterfallHook<{ value: number }>(),
       asyncWaterfallHook: new AsyncWaterfallHook<{ value: number }>(),
-      asyncParallelHook: new AsyncParallelHook<{ value: number }>(),
     });
 
     plugin.usePlugin({
@@ -355,9 +355,7 @@ describe("PluginSystem", () => {
       const p = plugin.hooks.asyncParallelHook.emit({ value: 1 });
       expect(typeof p.then === "function").toBe(true);
       const res = await p;
-      if (res) {
-        expect(typeof res.value === "number").toBe(true);
-      }
+      expect(res).toBe(undefined);
     })();
   });
 });
