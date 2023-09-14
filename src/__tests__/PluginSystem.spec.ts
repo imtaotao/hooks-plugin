@@ -14,55 +14,53 @@ describe("PluginSystem", () => {
   });
 
   it("Check version", () => {
-    const plugin = new PluginSystem({});
-    expect(typeof plugin.v === "string").toBe(true);
+    const plSys = new PluginSystem({});
+    expect(typeof plSys.v === "string").toBe(true);
   });
 
   it("Check plugin version", () => {
-    const plugin = new PluginSystem({});
-    plugin.usePlugin({
+    const plSys = new PluginSystem({});
+    plSys.use({
       name: "test",
-      hooks: {},
     });
 
-    plugin.usePlugin({
+    plSys.use({
       name: "test2",
       version: "1.0",
-      hooks: {},
     });
 
-    expect(plugin.plugins["test"].version === undefined).toBe(true);
-    expect(plugin.plugins["test2"].version === "1.0").toBe(true);
+    expect(plSys.plugins["test"].version === undefined).toBe(true);
+    expect(plSys.plugins["test2"].version === "1.0").toBe(true);
   });
 
   it("Check parameter", () => {
-    const plugin = new PluginSystem({
+    const plSys = new PluginSystem({
       a: new SyncHook(),
       b: new SyncHook(),
     });
 
     expect(() => {
-      plugin.usePlugin([] as any);
+      plSys.use([] as any);
     }).toThrowError();
     expect(() => {
-      plugin.usePlugin({} as any);
+      plSys.use({} as any);
     }).toThrowError();
     expect(() => {
-      plugin.removePlugin("");
+      plSys.remove("");
     }).toThrowError();
     expect(() => {
-      plugin.removePlugin("a");
-    }).toThrowError();
-    expect(Object.keys(plugin.hooks)).toEqual(["a", "b"]);
+      plSys.remove("a");
+    }).not.toThrowError();
+    expect(Object.keys(plSys.hooks)).toEqual(["a", "b"]);
   });
 
   it("Check for hooks declared not to exist", () => {
-    const plugin = new PluginSystem({
+    const plSys = new PluginSystem({
       a: new SyncHook(),
     });
 
     expect(() => {
-      plugin.usePlugin({
+      plSys.use({
         name: "test",
         hooks: {
           b() {},
@@ -72,11 +70,11 @@ describe("PluginSystem", () => {
   });
 
   it("Check once hooks", () => {
-    const plugin = new PluginSystem({
+    const plSys = new PluginSystem({
       a: new SyncWaterfallHook<{ value: number }>(),
     });
 
-    plugin.usePlugin({
+    plSys.use({
       name: "t1",
       hooks: {
         a(data) {
@@ -93,20 +91,20 @@ describe("PluginSystem", () => {
     });
 
     // registered after once hook, so here is `2`
-    expect(plugin.hooks.a.emit({ value: 0 })).toEqual({ value: 2 });
-    expect(plugin.hooks.a.emit({ value: 0 })).toEqual({ value: 1 });
-    expect(plugin.hooks.a.emit({ value: 0 })).toEqual({ value: 1 });
+    expect(plSys.hooks.a.emit({ value: 0 })).toEqual({ value: 2 });
+    expect(plSys.hooks.a.emit({ value: 0 })).toEqual({ value: 1 });
+    expect(plSys.hooks.a.emit({ value: 0 })).toEqual({ value: 1 });
   });
 
   it("Add plugin and remove plugin", () => {
-    const plugin = new PluginSystem({
+    const plSys = new PluginSystem({
       a: new SyncHook(),
       b: new SyncHook(),
     });
 
     let i = 0;
     let j = 0;
-    plugin.usePlugin({
+    plSys.use({
       name: "test1",
       hooks: {
         a() {
@@ -118,7 +116,7 @@ describe("PluginSystem", () => {
       },
     });
 
-    plugin.usePlugin({
+    plSys.use({
       name: "test2",
       hooks: {
         a() {
@@ -130,27 +128,50 @@ describe("PluginSystem", () => {
       },
     });
 
-    plugin.hooks.a.emit();
+    plSys.hooks.a.emit();
     expect(i).toBe(2);
-    plugin.hooks.b.emit();
+    plSys.hooks.b.emit();
     expect(j).toBe(2);
 
     i = 0;
     j = 0;
-    plugin.removePlugin("test1");
+    plSys.remove("test1");
 
-    plugin.hooks.a.emit();
+    plSys.hooks.a.emit();
     expect(i).toBe(1);
-    plugin.hooks.b.emit();
+    plSys.hooks.b.emit();
     expect(j).toBe(1);
   });
 
+  it("Plugin System lock and unlock", () => {
+    const plSys = new PluginSystem({});
+    plSys.use({ name: "test" });
+
+    plSys.lock();
+
+    expect(() => {
+      plSys.use({ name: "test1" });
+    }).toThrowError();
+    expect(() => {
+      plSys.remove("test");
+    }).toThrowError();
+
+    plSys.unlock();
+
+    expect(() => {
+      plSys.use({ name: "test1" });
+    }).not.toThrowError();
+    expect(() => {
+      plSys.remove("test");
+    }).not.toThrowError();
+  });
+
   it("Data check", () => {
-    const plugin = new PluginSystem({
+    const plSys = new PluginSystem({
       a: new SyncHook<[string], void>(),
     });
 
-    const obj: Plugin<typeof plugin.hooks> = {
+    const obj: Plugin<typeof plSys.hooks> = {
       name: "test",
       hooks: {
         a(s) {
@@ -159,108 +180,22 @@ describe("PluginSystem", () => {
       },
     };
     const spy = jest.spyOn(obj.hooks!, "a");
-    plugin.usePlugin(obj);
-    plugin.hooks.a.emit("chen");
+    plSys.use(obj);
+    plSys.hooks.a.emit("chen");
 
     expect(spy).toHaveBeenCalled();
     spy.mockReset();
     spy.mockRestore();
   });
 
-  it("Plugin inherit check(1)", () => {
-    const plugin1 = new PluginSystem({
-      a: new SyncHook<[string], void>(),
-    });
-    const plugin2 = new PluginSystem({
-      a: new SyncHook<[string], void>(),
-    });
-    expect(() => plugin2.inherit(plugin1)).toThrowError();
-  });
-
-  it("Plugin inherit check(2)", () => {
-    const plugin1 = new PluginSystem({
-      a: new SyncHook<[string], void>(),
-    });
-
-    plugin1.usePlugin({
-      name: "test",
-      hooks: {
-        a() {},
-      },
-    });
-
-    const plugin2 = new PluginSystem({
-      b: new SyncHook<[string], void>(),
-    });
-
-    plugin2.usePlugin({
-      name: "test",
-      hooks: {
-        b() {},
-      },
-    });
-
-    const plugin3 = plugin2.inherit(plugin1);
-    expect(Object.keys(plugin3.plugins)).toEqual(["test"]);
-  });
-
-  it("Plugin inherit", () => {
-    let i = 0;
-    const plugin1 = new PluginSystem({
-      a: new SyncHook<[string], void>(),
-    });
-
-    plugin1.usePlugin({
-      name: "test1",
-      hooks: {
-        a(data) {
-          i++;
-          expect(data).toBe("chen");
-        },
-      },
-      onceHooks: {
-        a(data) {
-          i++;
-          expect(data).toBe("chen");
-        },
-      },
-    });
-
-    const plugin2 = new PluginSystem({
-      b: new SyncHook<[string], void>(),
-    });
-
-    plugin1.hooks.a.emit("chen");
-    expect(i).toBe(2);
-
-    const plugin3 = plugin2.inherit(plugin1);
-
-    plugin3.usePlugin<typeof plugin3.hooks>({
-      name: "test3",
-      hooks: {
-        a(data) {
-          i++;
-          expect(data).toBe("chen");
-        },
-      },
-    });
-
-    i = 0;
-    plugin3.hooks.a.emit("chen");
-    expect(i).toBe(3);
-    i = 0;
-    plugin3.hooks.a.emit("chen");
-    expect(i).toBe(2);
-  });
-
   it("Remove plugin", () => {
-    const plugin = new PluginSystem({
+    const plSys = new PluginSystem({
       a: new SyncHook(),
     });
 
     let i = "";
 
-    plugin.usePlugin({
+    plSys.use({
       name: "test1",
       hooks: {
         a() {
@@ -269,7 +204,7 @@ describe("PluginSystem", () => {
       },
     });
 
-    plugin.usePlugin({
+    plSys.use({
       name: "test2",
       hooks: {
         a() {
@@ -279,27 +214,27 @@ describe("PluginSystem", () => {
       },
     });
 
-    plugin.hooks.a.emit();
+    plSys.hooks.a.emit();
     expect(i).toBe("ab");
 
     i = "";
-    plugin.removePlugin("test1");
-    plugin.hooks.a.emit();
+    plSys.remove("test1");
+    plSys.hooks.a.emit();
     expect(i).toBe("b");
 
     i = "";
-    plugin.removePlugin("test2");
-    plugin.hooks.a.emit();
+    plSys.remove("test2");
+    plSys.hooks.a.emit();
     expect(i).toBe("");
   });
 
   it("Check this", () => {
     const context = {};
-    const plugin = new PluginSystem({
+    const plSys = new PluginSystem({
       a: new SyncHook<[number], typeof context>(context),
     });
 
-    plugin.usePlugin({
+    plSys.use({
       name: "test",
       hooks: {
         a(n) {
@@ -315,15 +250,15 @@ describe("PluginSystem", () => {
       },
     });
 
-    plugin.hooks.a.emit(1);
+    plSys.hooks.a.emit(1);
   });
 
   it("Check this defaults to `null`", async () => {
-    const plugin = new PluginSystem({
+    const plSys = new PluginSystem({
       a: new SyncHook<[number]>(),
     });
 
-    plugin.usePlugin({
+    plSys.use({
       name: "test",
       hooks: {
         a(n) {
@@ -333,11 +268,11 @@ describe("PluginSystem", () => {
       },
     });
 
-    plugin.hooks.a.emit(1);
+    plSys.hooks.a.emit(1);
   });
 
   it("Type test", async () => {
-    const plugin = new PluginSystem({
+    const plSys = new PluginSystem({
       syncHook: new SyncHook<[string, number]>(),
       asyncHook: new AsyncHook<[string, number]>(),
       asyncParallelHook: new AsyncParallelHook<[{ value: number }]>(),
@@ -345,7 +280,7 @@ describe("PluginSystem", () => {
       asyncWaterfallHook: new AsyncWaterfallHook<{ value: number }>(),
     });
 
-    plugin.usePlugin({
+    plSys.use({
       name: "test",
       hooks: {
         syncHook(a, b) {
@@ -373,14 +308,14 @@ describe("PluginSystem", () => {
       },
     });
 
-    const res1 = plugin.hooks.syncHook.emit("str", 2);
+    const res1 = plSys.hooks.syncHook.emit("str", 2);
     expect(typeof res1 === "undefined").toBe(true);
 
-    const res2 = plugin.hooks.syncWaterfallHook.emit({ value: 1 });
+    const res2 = plSys.hooks.syncWaterfallHook.emit({ value: 1 });
     expect(typeof res2.value === "number").toBe(true);
 
     await (async () => {
-      const p = plugin.hooks.asyncHook.emit("str", 2);
+      const p = plSys.hooks.asyncHook.emit("str", 2);
       expect(typeof p.then === "function").toBe(true);
       const res = await p;
       if (res) {
@@ -389,7 +324,7 @@ describe("PluginSystem", () => {
     })();
 
     await (async () => {
-      const p = plugin.hooks.asyncWaterfallHook.emit({ value: 1 });
+      const p = plSys.hooks.asyncWaterfallHook.emit({ value: 1 });
       expect(typeof p.then === "function").toBe(true);
       const res = await p;
       if (res) {
@@ -398,7 +333,7 @@ describe("PluginSystem", () => {
     })();
 
     await (async () => {
-      const p = plugin.hooks.asyncParallelHook.emit({ value: 1 });
+      const p = plSys.hooks.asyncParallelHook.emit({ value: 1 });
       expect(typeof p.then === "function").toBe(true);
       const res = await p;
       expect(res).toBe(undefined);

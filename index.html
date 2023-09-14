@@ -16,30 +16,6 @@
       AsyncParallelHook,
       AsyncWaterfallHook,
     } = HooksPlugin;
-
-    const p = new PluginSystem({
-      a: new SyncWaterfallHook()
-    })
-
-    p.usePlugin({
-      name: 't1',
-      hooks: {
-        a(data) {
-          data.a = 1;
-          return data
-        }
-      },
-      onceHooks: {
-        a(data) {
-          data.b = 2;
-          return data
-        }
-      }
-    })
-
-    console.log(p.hooks.a.emit({}));
-    console.log(p.hooks.a.emit({}));
-    console.log(p.hooks.a.emit({}));
   </script>
 </body>
 </html>

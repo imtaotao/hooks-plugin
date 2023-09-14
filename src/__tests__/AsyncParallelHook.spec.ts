@@ -6,14 +6,14 @@ import {
 
 describe("AsyncParallelHook", () => {
   it("Check order, parameter and results", async () => {
-    const plugin = new PluginSystem({
+    const plSys = new PluginSystem({
       // `AsyncWaterfallHook` will be queued for execution
       waterfall: new AsyncWaterfallHook<{ n: number }>(),
       // `AsyncParallelHook` will be executed in parallel
       parallel: new AsyncParallelHook<[{ n: number }]>(),
     });
 
-    plugin.usePlugin({
+    plSys.use({
       name: "test1",
       hooks: {
         waterfall(data) {
@@ -37,7 +37,7 @@ describe("AsyncParallelHook", () => {
       },
     });
 
-    plugin.usePlugin({
+    plSys.use({
       name: "test2",
       hooks: {
         waterfall(data) {
@@ -61,7 +61,7 @@ describe("AsyncParallelHook", () => {
       },
     });
 
-    plugin.usePlugin({
+    plSys.use({
       name: "test3",
       hooks: {
         waterfall(data) {
@@ -85,7 +85,7 @@ describe("AsyncParallelHook", () => {
       },
     });
 
-    plugin.usePlugin({
+    plSys.use({
       name: "test4",
       hooks: {
         waterfall(data) {
@@ -102,7 +102,7 @@ describe("AsyncParallelHook", () => {
 
     // parallel hook
     const data1 = { n: 0 };
-    const task1 = plugin.hooks.parallel.emit(data1);
+    const task1 = plSys.hooks.parallel.emit(data1);
 
     expect(data1.n).toBe(0);
     expect(typeof task1.then === "function").toBe(true);
@@ -112,7 +112,7 @@ describe("AsyncParallelHook", () => {
 
     // waterfall hook
     const data2 = { n: 0 };
-    const task2 = plugin.hooks.waterfall.emit(data2);
+    const task2 = plSys.hooks.waterfall.emit(data2);
 
     expect(data2.n).toBe(0);
     const res2 = await task2;
@@ -128,7 +128,7 @@ describe("AsyncParallelHook", () => {
   it("Check this", async () => {
     const data = {};
     const context = {};
-    const hook = new AsyncParallelHook<Record<string, never>, typeof context>(
+    const hook = new AsyncParallelHook<[Record<string, never>], typeof context>(
       context
     );
     expect(hook.context === context).toBe(true);
@@ -148,7 +148,7 @@ describe("AsyncParallelHook", () => {
 
   it("Check this defaults to `null`", async () => {
     const data = {};
-    const hook = new AsyncParallelHook();
+    const hook = new AsyncParallelHook<[Record<string, never>]>();
     expect(hook.context).toBe(null);
 
     hook.on(function (obj) {

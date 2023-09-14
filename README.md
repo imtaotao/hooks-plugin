@@ -21,7 +21,7 @@ const plSys = new PluginSystem({
 });
 
 // Register plugin
-plSys.usePlugin({
+plSys.use({
   name: "testPlugin",
   hooks: {
     a(a, b) {
@@ -49,7 +49,7 @@ const plSys = new PluginSystem({
   b: new AsyncWaterfallHook<{ value: number }, string>("context"),
 });
 
-plSys.usePlugin({
+plSys.use({
   name: "testPlugin",
   version: "1.0.0", // Optional
   hooks: {
@@ -78,6 +78,35 @@ plSys.hooks.b.emit({ value: 1 });
 ```
 
 
+Interact with other plugins
+
+```ts
+import { SyncHook, PluginSystem } from "hooks-plugin";
+
+// Declare your plugin `api` type
+declare module "hooks-plugin" {
+  export interface PluginApis {
+    testApis: (typeof plugin)["apis"];
+  }
+}
+
+const plSys = new PluginSystem({});
+
+const plugin = plSys.use({
+  name: "testApis",
+  apis: {
+    get(key: string) {},
+    set(key: string, value: unknown) {},
+  },
+});
+
+const apis = plSys.getApis("testApis");
+
+apis.get("a");
+apis.set("a", 1);
+```
+
+
 ## Hook list
 
 - `SyncHook`
@@ -85,6 +114,15 @@ plSys.hooks.b.emit({ value: 1 });
 - `AsyncHook`
 - `AsyncWaterfallHook`
 - `AsyncParallelHook`
+
+
+## Apis
+
+- `plSys.use`
+- `plSys.lock`
+- `plSys.unlock`
+- `plSys.remove`
+- `plSys.getApis`
 
 
 ## CDN

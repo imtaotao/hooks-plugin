@@ -1,6 +1,6 @@
 {
   "name": "hooks-plugin",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A plugin system built through various hooks.",
   "main": "./dist/hooks.cjs.js",
   "unpkg": "./dist/hooks.umd.js",
@@ -8,7 +8,7 @@
   "types": "./dist/index.d.ts",
   "scripts": {
     "test": "jest",
-    "build": "rollup --config",
+    "build": "rm -rf dist && rollup --config",
     "dev": "http-server ./ --cors -c-1 -o",
     "format": "prettier --write --parser typescript \"(src|dist)/**/*.(js|ts?(x))\""
   },
