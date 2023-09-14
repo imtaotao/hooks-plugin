@@ -17,7 +17,12 @@
     "README.md"
   ],
   "author": "imtaotao",
-  "keywords": ["hooks", "plugin"],
+  "keywords": [
+    "hooks",
+    "plugin",
+    "event",
+    "tapable"
+  ],
   "license": "MIT",
   "publishConfig": {
     "registry": "https://registry.npmjs.org"
