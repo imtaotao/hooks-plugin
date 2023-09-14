@@ -3,7 +3,7 @@ import { AsyncHook } from "../../index";
 describe("AsyncHook", () => {
   it("Check return value", async () => {
     let i = 0;
-    const hook = new AsyncHook<[string]>("test");
+    const hook = new AsyncHook<[string]>(null, "test");
     expect(hook.type).toBe("test");
 
     hook.on(async (a) => {
@@ -64,9 +64,44 @@ describe("AsyncHook", () => {
   });
 
   it("Check asynchronous response", async () => {
-    const hook = new AsyncHook<unknown, number>();
-    hook.on(() => Promise.resolve(1));
+    const hook = new AsyncHook<[void]>();
+    const obj = { fn() {} };
+    const spy = jest.spyOn(obj, "fn");
+    hook.on(() => Promise.resolve(false));
+    hook.on(obj.fn);
+
     const returnValue = await hook.emit();
-    expect(returnValue).toBe(1);
+    expect(returnValue).toBe(false);
+    expect(spy).not.toHaveBeenCalled();
+  });
+
+  it("Check this", async () => {
+    const context = {};
+    const hook = new AsyncHook<[number], typeof context>(context);
+    expect(hook.context === context).toBe(true);
+
+    hook.on((a) => {
+      expect(a).toBe(1);
+      expect(this !== context).toBe(true);
+    });
+
+    hook.on(function (a) {
+      expect(a).toBe(1);
+      expect(this === context).toBe(true);
+    });
+
+    await hook.emit(1);
+  });
+
+  it("Check this defaults to `null`", async () => {
+    const hook = new AsyncHook<[number]>();
+    expect(hook.context).toBe(null);
+
+    hook.on(function (a) {
+      expect(a).toBe(1);
+      expect(this).toBe(null);
+    });
+
+    await hook.emit(1);
   });
 });

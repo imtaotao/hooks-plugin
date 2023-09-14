@@ -1,9 +1,9 @@
 import { SyncHook } from "../../index";
 
 describe("SyncHook", () => {
-  it("Check order and results", () => {
+  it("Check order", () => {
     let i = 0;
-    const hook = new SyncHook<[void], void>("test");
+    const hook = new SyncHook<[void]>(null, "test");
     expect(hook.type).toBe("test");
 
     hook.on(() => {
@@ -35,7 +35,7 @@ describe("SyncHook", () => {
   });
 
   it("Check multiple parameters", () => {
-    const hook = new SyncHook<[number, string], void>();
+    const hook = new SyncHook<[number, string]>();
     expect(hook.type).toBe("SyncHook");
 
     hook.on((a, b) => {
@@ -49,5 +49,47 @@ describe("SyncHook", () => {
     });
 
     hook.emit(1, "1");
+  });
+
+  it("Check this", () => {
+    const context = {};
+    const hook = new SyncHook<[number], typeof context>(context);
+    expect(hook.context === context).toBe(true);
+
+    hook.on((a) => {
+      expect(a).toBe(1);
+      expect(this !== context).toBe(true);
+    });
+
+    hook.on(function (a) {
+      expect(a).toBe(1);
+      expect(this === context).toBe(true);
+    });
+
+    hook.emit(1);
+  });
+
+  it("Check this is empty value", () => {
+    const hook = new SyncHook<[number], string>("");
+    expect(hook.context === "").toBe(true);
+
+    hook.on(function (a) {
+      expect(a).toBe(1);
+      expect(this === "").toBe(true);
+    });
+
+    hook.emit(1);
+  });
+
+  it("Check this defaults to `null`", () => {
+    const hook = new SyncHook<[number]>();
+    expect(hook.context).toBe(null);
+
+    hook.on(function (a) {
+      expect(a).toBe(1);
+      expect(this).toBe(null);
+    });
+
+    hook.emit(1);
   });
 });

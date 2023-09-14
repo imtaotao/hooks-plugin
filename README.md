@@ -10,37 +10,73 @@ Plugin system built through various hooks, a very small library, inspired by [ta
 
 ## Usage
 
+Simple example
 
 ```ts
-import { AsyncHook, PluginSystem } from 'hooks-plugin';
+import { SyncHook, PluginSystem } from "hooks-plugin";
 
 // Create a plugin and declare hooks
-const hooks = new PluginSystem({
-  // 1. The first generic is the parameter type received by the hook
-  // 2. The second generic is the type returned by the hook function
-  a: new AsyncHook<[number, number], void>(),
+const plSys = new PluginSystem({
+  a: new SyncHook<[string, number]>(),
 });
 
 // Register plugin
-hooks.usePlugin({
-  name: 'testPlugin',
-  async a(a, b) {
-    console.log(a, b);
+plSys.usePlugin({
+  name: "testPlugin",
+  hooks: {
+    a(a, b) {
+      console.log(a, b); // 'str', 1
+    },
   },
 });
 
 // Trigger hook
-hooks.lifecycle.a.emit(1, 2);
+plSys.hooks.a.emit("str", 1);
+```
+
+
+More complex example
+
+```ts
+import { AsyncHook, PluginSystem } from "hooks-plugin";
+
+const plSys = new PluginSystem({
+  // 1. The first generic is the parameter type received by the hook
+  // 2. The second generic is the `this`` type of the hook function
+  a: new AsyncHook<[number, number], string>("context"),
+
+  b: new AsyncWaterfallHook<{ value: number }, string>("context"),
+});
+
+plSys.usePlugin({
+  name: "testPlugin",
+  version: "1.0.0", // Optional
+  hooks: {
+    async a(a, b) {
+      console.log(this); // 'context'
+      console.log(a, b); // 1, 2
+    },
+
+    async b(data) {
+      console.log(this); // 'context'
+      console.log(data); // { value: 1 }
+      return data;
+    },
+  },
+});
+
+plSys.hooks.a.emit(1, 2);
+plSys.hooks.b.emit({ value: 1 });
 ```
 
 
 ## Hook list
 
 - `SyncHook`
-- `AsyncHook`
 - `SyncWaterfallHook`
-- `AsyncParallelHook`
+- `AsyncHook`
 - `AsyncWaterfallHook`
+- `AsyncParallelHook`
 
 
 ## CDN
@@ -51,6 +87,15 @@ hooks.lifecycle.a.emit(1, 2);
 <body>
   <script src='https://unpkg.com/hooks-plugin/dist/hooks.umd.js'></script>
   <script>
+    const {
+      PluginSystem,
+      SyncHook,
+      AsyncHook,
+      SyncWaterfallHook,
+      AsyncParallelHook,
+      AsyncWaterfallHook,
+    } = HooksPlugin;
+
     // ...
   </script>
 </body>

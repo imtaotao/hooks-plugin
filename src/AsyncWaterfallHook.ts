@@ -2,12 +2,12 @@ import { SyncHook } from "./SyncHook";
 import { assert, isPlainObject, checkReturnData } from "./Utils";
 import type { CallbackReturnType } from "./Interface";
 
-export class AsyncWaterfallHook<T extends Record<string, any>> extends SyncHook<
-  [T],
-  CallbackReturnType<T>
-> {
-  constructor(type = "AsyncWaterfallHook") {
-    super(type);
+export class AsyncWaterfallHook<
+  T extends Record<any, unknown>,
+  C = null
+> extends SyncHook<[T], C, CallbackReturnType<T>> {
+  constructor(context?: C, type = "AsyncWaterfallHook") {
+    super(context, type);
   }
 
   emit(data: T): Promise<T | false> {
@@ -21,7 +21,7 @@ export class AsyncWaterfallHook<T extends Record<string, any>> extends SyncHook<
     }
 
     let i = 0;
-    const call = (prevData: T | false) => {
+    const call = (prevData: T | false): any => {
       if (prevData === false) {
         return false;
       } else {
@@ -31,7 +31,7 @@ export class AsyncWaterfallHook<T extends Record<string, any>> extends SyncHook<
         );
         data = prevData as T;
         if (i < ls.length) {
-          return Promise.resolve(ls[i++](data)).then(call);
+          return Promise.resolve(ls[i++].call(this.context, data)).then(call);
         }
       }
       return data;

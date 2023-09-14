@@ -2,7 +2,7 @@ import { AsyncWaterfallHook } from "../../index";
 
 describe("AsyncWaterfallHook", () => {
   it("Check order, results and errors", async () => {
-    const hook = new AsyncWaterfallHook<{ name: string }>("test");
+    const hook = new AsyncWaterfallHook<{ name: string }>(null, "test");
     expect(hook.type).toBe("test");
 
     hook.on(async (data) => {
@@ -72,5 +72,42 @@ describe("AsyncWaterfallHook", () => {
     obj = { n: 1 };
     data = await hook.emit({ n: 1 });
     expect(data).toBe(false);
+  });
+
+  it("Check this", async () => {
+    const data = {};
+    const context = {};
+    const hook = new AsyncWaterfallHook<Record<string, never>, typeof context>(
+      context
+    );
+    expect(hook.context === context).toBe(true);
+
+    hook.on((obj) => {
+      expect(obj === data).toBe(true);
+      expect(this !== context).toBe(true);
+      return data;
+    });
+
+    hook.on(function (obj) {
+      expect(obj === data).toBe(true);
+      expect(this === context).toBe(true);
+      return obj;
+    });
+
+    await hook.emit(data);
+  });
+
+  it("Check this defaults to `null`", async () => {
+    const data = {};
+    const hook = new AsyncWaterfallHook();
+    expect(hook.context).toBe(null);
+
+    hook.on(function (obj) {
+      expect(obj === data).toBe(true);
+      expect(this).toBe(null);
+      return obj;
+    });
+
+    await hook.emit(data);
   });
 });

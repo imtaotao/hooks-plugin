@@ -1,69 +1,62 @@
 import type { Plugin } from "./Interface";
 import { PREFIX, assert, isPlainObject } from "./Utils";
 
-export class PluginSystem<T extends Record<string, any>> {
-  lifecycle: T;
-  lifecycleKeys: Array<keyof T>;
-  registerPlugins: Record<string, Plugin<T>> = {};
-  version = __VERSION__;
+export class PluginSystem<T extends Record<string, unknown>> {
+  hooks: T;
+  v = __VERSION__;
+  plugins: Record<string, Plugin<T>> = Object.create(null);
 
-  constructor(lifecycle: T) {
-    this.lifecycle = lifecycle;
-    this.lifecycleKeys = Object.keys(lifecycle);
+  constructor(hooks: T) {
+    this.hooks = hooks;
   }
 
-  usePlugin(plugin: Plugin<T>) {
+  usePlugin<K extends T>(plugin: Plugin<K>) {
     assert(isPlainObject(plugin), "Invalid plugin configuration.");
-    // Plugin name is required and unique
-    const pluginName = plugin.name;
-    assert(pluginName, 'Plugin must provide a "name".');
+    assert(plugin.name, 'Plugin must provide a "name".');
+    assert(plugin.hooks, `Plugin "${plugin.name}" must provide "hooks".`);
 
-    if (!this.registerPlugins[pluginName]) {
-      this.registerPlugins[pluginName] = plugin;
-
-      for (const key of Object.keys(plugin)) {
-        if (key === "name") continue;
-        const pluginLife = plugin[key as string];
+    if (!this.plugins[plugin.name]) {
+      this.plugins[plugin.name] = plugin;
+      for (const key in plugin.hooks) {
         assert(
-          this.lifecycle[key],
-          `"${key}" hook is not defined in plugin "${pluginName}".`
+          this.hooks[key],
+          `"${key}" hook is not defined in plugin "${plugin.name}".`
         );
-        // Differentiate different types of hooks and adopt different registration strategies
-        this.lifecycle[key].on(pluginLife);
+        (this.hooks[key] as any).on(plugin.hooks[key]);
       }
     } else {
       console.warn(
-        `${PREFIX}: Repeat to register plugin hooks "${pluginName}".`
+        `${PREFIX}: Repeat to register plugin hooks "${plugin.name}".`
       );
     }
+  }
+
+  inherit<T extends PluginSystem<any>>({ plugins, hooks }: T) {
+    for (const key in hooks) {
+      assert(
+        !this.hooks[key],
+        `"${key as string}" hook has conflict and cannot be inherited.`
+      );
+      (this.hooks as any)[key] = hooks[key];
+    }
+    for (const n in plugins) {
+      if (!this.plugins[n]) {
+        console.warn(
+          `${PREFIX}: "${n}" plugin has conflict and cannot be inherited.`
+        );
+      }
+      this.usePlugin(plugins[n]);
+    }
+    return this as typeof this & T;
   }
 
   removePlugin(pluginName: string) {
     assert(pluginName, 'Must provide a "name".');
-    const plugin = this.registerPlugins[pluginName];
+    const plugin = this.plugins[pluginName];
     assert(plugin, `Plugin "${pluginName}" is not registered.`);
 
-    for (const key in plugin) {
-      if (key === "name") continue;
-      this.lifecycle[key].remove(plugin[key as string]);
+    for (const key in plugin.hooks) {
+      (this.hooks[key] as any).remove(plugin.hooks[key]);
     }
-  }
-
-  inherit<T extends PluginSystem<any>>({ lifecycle, registerPlugins }: T) {
-    for (const hookName in lifecycle) {
-      assert(
-        !this.lifecycle[hookName],
-        `"${hookName as string}" hook has conflict and cannot be inherited.`
-      );
-      (this.lifecycle as any)[hookName] = lifecycle[hookName];
-    }
-    for (const pluginName in registerPlugins) {
-      assert(
-        !this.registerPlugins[pluginName],
-        `"${pluginName}" plugin has conflict and cannot be inherited.`
-      );
-      this.usePlugin(registerPlugins[pluginName]);
-    }
-    return this as typeof this & T;
   }
 }

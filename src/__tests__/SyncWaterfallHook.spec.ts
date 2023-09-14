@@ -2,7 +2,7 @@ import { SyncWaterfallHook } from "../../index";
 
 describe("SyncWaterfallHook", () => {
   it("Check results and order", () => {
-    const hook = new SyncWaterfallHook<{ name: string }>("test");
+    const hook = new SyncWaterfallHook<{ name: string }>(null, "test");
     expect(hook.type).toBe("test");
 
     hook.on((data) => {
@@ -33,10 +33,9 @@ describe("SyncWaterfallHook", () => {
     const hook = new SyncWaterfallHook<{ name: string }>();
     expect(hook.type).toBe("SyncWaterfallHook");
 
-    // @ts-ignore
-    hook.on(() => {
+    hook.on((() => {
       return "";
-    });
+    }) as any);
 
     hook.on((data) => {
       data.name += "2";
@@ -44,5 +43,42 @@ describe("SyncWaterfallHook", () => {
     });
 
     expect(() => hook.emit({ name: "chen" })).toThrowError();
+  });
+
+  it("Check this", () => {
+    const data = {};
+    const context = {};
+    const hook = new SyncWaterfallHook<Record<string, never>, typeof context>(
+      context
+    );
+    expect(hook.context === context).toBe(true);
+
+    hook.on((obj) => {
+      expect(obj === data).toBe(true);
+      expect(this !== context).toBe(true);
+      return data;
+    });
+
+    hook.on(function (obj) {
+      expect(obj === data).toBe(true);
+      expect(this === context).toBe(true);
+      return obj;
+    });
+
+    hook.emit(data);
+  });
+
+  it("Check this defaults to `null`", () => {
+    const data = {};
+    const hook = new SyncWaterfallHook();
+    expect(hook.context).toBe(null);
+
+    hook.on(function (obj) {
+      expect(obj === data).toBe(true);
+      expect(this).toBe(null);
+      return obj;
+    });
+
+    hook.emit(data);
   });
 });

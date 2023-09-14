@@ -1,9 +1,38 @@
-import { SyncHook, PluginSystem } from "../../index";
+import {
+  type Plugin,
+  SyncHook,
+  AsyncHook,
+  SyncWaterfallHook,
+  AsyncParallelHook,
+  AsyncWaterfallHook,
+  PluginSystem,
+} from "../../index";
 
-describe("hooks plugin", () => {
+describe("PluginSystem", () => {
+  beforeEach(() => {
+    jest.spyOn(console, "warn").mockImplementation(() => {});
+  });
+
   it("Check version", () => {
     const plugin = new PluginSystem({});
-    expect(typeof plugin.version === "string").toBe(true);
+    expect(typeof plugin.v === "string").toBe(true);
+  });
+
+  it("Check plugin version", () => {
+    const plugin = new PluginSystem({});
+    plugin.usePlugin({
+      name: "test",
+      hooks: {},
+    });
+
+    plugin.usePlugin({
+      name: "test2",
+      version: "1.0",
+      hooks: {},
+    });
+
+    expect(plugin.plugins["test"].version === undefined).toBe(true);
+    expect(plugin.plugins["test2"].version === "1.0").toBe(true);
   });
 
   it("Check parameter", () => {
@@ -12,7 +41,6 @@ describe("hooks plugin", () => {
       b: new SyncHook(),
     });
 
-    expect(plugin.lifecycleKeys).toEqual(["a", "b"]);
     expect(() => {
       plugin.usePlugin([] as any);
     }).toThrowError();
@@ -25,6 +53,7 @@ describe("hooks plugin", () => {
     expect(() => {
       plugin.removePlugin("a");
     }).toThrowError();
+    expect(Object.keys(plugin.hooks)).toEqual(["a", "b"]);
   });
 
   it("Check for hooks declared not to exist", () => {
@@ -35,7 +64,9 @@ describe("hooks plugin", () => {
     expect(() => {
       plugin.usePlugin({
         name: "test",
-        b() {},
+        hooks: {
+          b() {},
+        },
       } as any);
     }).toThrowError();
   });
@@ -50,36 +81,40 @@ describe("hooks plugin", () => {
     let j = 0;
     plugin.usePlugin({
       name: "test1",
-      a() {
-        i++;
-      },
-      b() {
-        j++;
+      hooks: {
+        a() {
+          i++;
+        },
+        b() {
+          j++;
+        },
       },
     });
 
     plugin.usePlugin({
       name: "test2",
-      a() {
-        i++;
-      },
-      b() {
-        j++;
+      hooks: {
+        a() {
+          i++;
+        },
+        b() {
+          j++;
+        },
       },
     });
 
-    plugin.lifecycle.a.emit();
+    plugin.hooks.a.emit();
     expect(i).toBe(2);
-    plugin.lifecycle.b.emit();
+    plugin.hooks.b.emit();
     expect(j).toBe(2);
 
     i = 0;
     j = 0;
     plugin.removePlugin("test1");
 
-    plugin.lifecycle.a.emit();
+    plugin.hooks.a.emit();
     expect(i).toBe(1);
-    plugin.lifecycle.b.emit();
+    plugin.hooks.b.emit();
     expect(j).toBe(1);
   });
 
@@ -88,15 +123,17 @@ describe("hooks plugin", () => {
       a: new SyncHook<[string], void>(),
     });
 
-    const obj = {
+    const obj: Plugin<typeof plugin.hooks> = {
       name: "test",
-      a(s) {
-        expect(s).toBe("chen");
+      hooks: {
+        a(s) {
+          expect(s).toBe("chen");
+        },
       },
     };
-    const spy = jest.spyOn(obj, "a");
+    const spy = jest.spyOn(obj.hooks, "a");
     plugin.usePlugin(obj);
-    plugin.lifecycle.a.emit("chen");
+    plugin.hooks.a.emit("chen");
 
     expect(spy).toHaveBeenCalled();
     spy.mockReset();
@@ -120,7 +157,9 @@ describe("hooks plugin", () => {
 
     plugin1.usePlugin({
       name: "test",
-      a() {},
+      hooks: {
+        a() {},
+      },
     });
 
     const plugin2 = new PluginSystem({
@@ -129,10 +168,13 @@ describe("hooks plugin", () => {
 
     plugin2.usePlugin({
       name: "test",
-      b() {},
+      hooks: {
+        b() {},
+      },
     });
 
-    expect(() => plugin2.inherit(plugin1)).toThrowError();
+    const plugin3 = plugin2.inherit(plugin1);
+    expect(Object.keys(plugin3.plugins)).toEqual(["test"]);
   });
 
   it("Plugin inherit", () => {
@@ -143,9 +185,11 @@ describe("hooks plugin", () => {
 
     plugin1.usePlugin({
       name: "test1",
-      a(data) {
-        i++;
-        expect(data).toBe("chen");
+      hooks: {
+        a(data) {
+          i++;
+          expect(data).toBe("chen");
+        },
       },
     });
 
@@ -155,15 +199,165 @@ describe("hooks plugin", () => {
 
     const plugin3 = plugin2.inherit(plugin1);
 
-    plugin3.usePlugin({
+    plugin3.usePlugin<typeof plugin3.hooks>({
       name: "test3",
-      a(data) {
-        i++;
-        expect(data).toBe("chen");
+      hooks: {
+        a(data) {
+          i++;
+          expect(data).toBe("chen");
+        },
       },
     });
 
-    plugin3.lifecycle.a.emit("chen");
+    plugin3.hooks.a.emit("chen");
     expect(i).toBe(2);
+  });
+
+  it("Remove plugin", () => {
+    const plugin = new PluginSystem({
+      a: new SyncHook(),
+    });
+
+    let i = "";
+
+    plugin.usePlugin({
+      name: "test1",
+      hooks: {
+        a() {
+          i += "a";
+        },
+      },
+    });
+
+    plugin.usePlugin({
+      name: "test2",
+      hooks: {
+        a() {
+          this;
+          i += "b";
+        },
+      },
+    });
+
+    plugin.hooks.a.emit();
+    expect(i).toBe("ab");
+
+    i = "";
+    plugin.removePlugin("test1");
+    plugin.hooks.a.emit();
+    expect(i).toBe("b");
+
+    i = "";
+    plugin.removePlugin("test2");
+    plugin.hooks.a.emit();
+    expect(i).toBe("");
+  });
+
+  it("Check this", () => {
+    const context = {};
+    const plugin = new PluginSystem({
+      a: new SyncHook<[number], typeof context>(context),
+    });
+
+    plugin.usePlugin({
+      name: "test",
+      hooks: {
+        a(n) {
+          expect(n).toBe(1);
+          expect(this).toBe(context);
+        },
+      },
+    });
+
+    plugin.hooks.a.emit(1);
+  });
+
+  it("Check this defaults to `null`", async () => {
+    const plugin = new PluginSystem({
+      a: new SyncHook<[number]>(),
+    });
+
+    plugin.usePlugin({
+      name: "test",
+      hooks: {
+        a(n) {
+          expect(n).toBe(1);
+          expect(this).toBe(null);
+        },
+      },
+    });
+
+    plugin.hooks.a.emit(1);
+  });
+
+  it("Type test", async () => {
+    const plugin = new PluginSystem({
+      syncHook: new SyncHook<[string, number]>(),
+      asyncHook: new AsyncHook<[string, number]>(),
+      syncWaterfallHook: new SyncWaterfallHook<{ value: number }>(),
+      asyncWaterfallHook: new AsyncWaterfallHook<{ value: number }>(),
+      asyncParallelHook: new AsyncParallelHook<{ value: number }>(),
+    });
+
+    plugin.usePlugin({
+      name: "test",
+      hooks: {
+        syncHook(a, b) {
+          expect(typeof a).toBe("string");
+          expect(typeof b).toBe("number");
+          return 1;
+        },
+        asyncHook(a, b) {
+          expect(typeof a).toBe("string");
+          expect(typeof b).toBe("number");
+          return;
+        },
+        syncWaterfallHook(data) {
+          expect(typeof data.value === "number").toBe(true);
+          return data;
+        },
+        asyncWaterfallHook(data) {
+          expect(typeof data.value === "number").toBe(true);
+          return data;
+        },
+        asyncParallelHook(data) {
+          expect(typeof data.value === "number").toBe(true);
+          return;
+        },
+      },
+    });
+
+    const res1 = plugin.hooks.syncHook.emit("str", 2);
+    expect(typeof res1 === "undefined").toBe(true);
+
+    const res2 = plugin.hooks.syncWaterfallHook.emit({ value: 1 });
+    expect(typeof res2.value === "number").toBe(true);
+
+    await (async () => {
+      const p = plugin.hooks.asyncHook.emit("str", 2);
+      expect(typeof p.then === "function").toBe(true);
+      const res = await p;
+      if (res) {
+        expect(typeof res === "undefined").toBe(true);
+      }
+    })();
+
+    await (async () => {
+      const p = plugin.hooks.asyncWaterfallHook.emit({ value: 1 });
+      expect(typeof p.then === "function").toBe(true);
+      const res = await p;
+      if (res) {
+        expect(typeof res.value === "number").toBe(true);
+      }
+    })();
+
+    await (async () => {
+      const p = plugin.hooks.asyncParallelHook.emit({ value: 1 });
+      expect(typeof p.then === "function").toBe(true);
+      const res = await p;
+      if (res) {
+        expect(typeof res.value === "number").toBe(true);
+      }
+    })();
   });
 });
