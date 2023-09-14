@@ -64,6 +64,13 @@ plSys.usePlugin({
       return data;  // Must return values of the same type
     },
   },
+  // The order is after `hooks` and will only be called once
+  onceHooks: {
+    async a(a, b) {
+      console.log(this); // 'context'
+      console.log(a, b); // 1, 2
+    },
+  }
 });
 
 plSys.hooks.a.emit(1, 2);

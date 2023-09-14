@@ -51,6 +51,21 @@ describe("SyncHook", () => {
     hook.emit(1, "1");
   });
 
+  it("Clone", () => {
+    const context = {};
+    const hook = new SyncHook<[number, string], Record<string, never>>(
+      context,
+      "test"
+    );
+    hook.on(() => {});
+    const cloned = hook.clone();
+
+    expect(cloned.type).toBe("test");
+    expect(cloned.context).toBe(context);
+    expect(hook.listeners.size).toBe(1);
+    expect(cloned.listeners.size).toBe(0);
+  });
+
   it("Check this", () => {
     const context = {};
     const hook = new SyncHook<[number], typeof context>(context);

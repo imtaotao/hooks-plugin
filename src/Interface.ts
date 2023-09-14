@@ -8,4 +8,7 @@ export interface Plugin<T extends Record<string, any>> {
   hooks: {
     [k in keyof T]?: Parameters<T[k]["on"]>[0];
   };
+  onceHooks?: {
+    [k in keyof T]?: Parameters<T[k]["on"]>[0];
+  };
 }

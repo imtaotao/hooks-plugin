@@ -71,6 +71,33 @@ describe("PluginSystem", () => {
     }).toThrowError();
   });
 
+  it("Check once hooks", () => {
+    const plugin = new PluginSystem({
+      a: new SyncWaterfallHook<{ value: number }>(),
+    });
+
+    plugin.usePlugin({
+      name: "t1",
+      hooks: {
+        a(data) {
+          data.value = 1;
+          return data;
+        },
+      },
+      onceHooks: {
+        a(data) {
+          data.value = 2;
+          return data;
+        },
+      },
+    });
+
+    // registered after once hook, so here is `2`
+    expect(plugin.hooks.a.emit({ value: 0 })).toEqual({ value: 2 });
+    expect(plugin.hooks.a.emit({ value: 0 })).toEqual({ value: 1 });
+    expect(plugin.hooks.a.emit({ value: 0 })).toEqual({ value: 1 });
+  });
+
   it("Add plugin and remove plugin", () => {
     const plugin = new PluginSystem({
       a: new SyncHook(),
@@ -191,11 +218,20 @@ describe("PluginSystem", () => {
           expect(data).toBe("chen");
         },
       },
+      onceHooks: {
+        a(data) {
+          i++;
+          expect(data).toBe("chen");
+        },
+      },
     });
 
     const plugin2 = new PluginSystem({
       b: new SyncHook<[string], void>(),
     });
+
+    plugin1.hooks.a.emit("chen");
+    expect(i).toBe(2);
 
     const plugin3 = plugin2.inherit(plugin1);
 
@@ -209,6 +245,10 @@ describe("PluginSystem", () => {
       },
     });
 
+    i = 0;
+    plugin3.hooks.a.emit("chen");
+    expect(i).toBe(3);
+    i = 0;
     plugin3.hooks.a.emit("chen");
     expect(i).toBe(2);
   });
@@ -262,6 +302,12 @@ describe("PluginSystem", () => {
     plugin.usePlugin({
       name: "test",
       hooks: {
+        a(n) {
+          expect(n).toBe(1);
+          expect(this).toBe(context);
+        },
+      },
+      onceHooks: {
         a(n) {
           expect(n).toBe(1);
           expect(this).toBe(context);

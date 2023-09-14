@@ -33,6 +33,10 @@ export class SyncHook<T, C = null, K = void> {
     }
   }
 
+  clone(): this {
+    return new (this.constructor as any)(this.context, this.type);
+  }
+
   remove(fn: Callback<T, C, K>) {
     return this.listeners.delete(fn);
   }
