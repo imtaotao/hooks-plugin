@@ -1,5 +1,5 @@
 export { PluginSystem } from "./src/PluginSystem";
-export type { Plugin, PluginApis } from './src/Interface'
+export type { Plugin, PluginApis, HookType } from './src/Interface'
 export { SyncHook } from "./src/SyncHook";
 export { AsyncHook } from "./src/AsyncHook";
 export { SyncWaterfallHook } from "./src/SyncWaterfallHook";

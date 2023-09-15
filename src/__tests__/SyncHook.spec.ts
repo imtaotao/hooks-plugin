@@ -3,8 +3,8 @@ import { SyncHook } from "../../index";
 describe("SyncHook", () => {
   it("Check order", () => {
     let i = 0;
-    const hook = new SyncHook<[void]>(null, "test");
-    expect(hook.type).toBe("test");
+    const hook = new SyncHook<[void]>(null);
+    expect(hook.type).toBe("SyncHook");
 
     hook.on(() => {
       i++;
@@ -53,17 +53,19 @@ describe("SyncHook", () => {
 
   it("Clone", () => {
     const context = {};
-    const hook = new SyncHook<[number, string], Record<string, never>>(
-      context,
-      "test"
-    );
+    const hook = new SyncHook<[number, string], Record<string, never>>(context);
     hook.on(() => {});
-    const cloned = hook.clone();
+    const cloned1 = hook.clone();
 
-    expect(cloned.type).toBe("test");
-    expect(cloned.context).toBe(context);
+    expect(cloned1.type).toBe("SyncHook");
+    expect(cloned1.context).toBe(context);
     expect(hook.listeners.size).toBe(1);
-    expect(cloned.listeners.size).toBe(0);
+    expect(cloned1.listeners.size).toBe(0);
+    expect(cloned1.before !== undefined).toBe(true);
+
+    const cloned2 = hook.before!.clone();
+    expect(cloned2.type).toBe("SyncHook");
+    expect(cloned2.before === undefined).toBe(true);
   });
 
   it("Check this", () => {

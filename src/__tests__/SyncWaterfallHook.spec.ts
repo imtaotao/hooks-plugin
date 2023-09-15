@@ -2,8 +2,8 @@ import { SyncWaterfallHook } from "../../index";
 
 describe("SyncWaterfallHook", () => {
   it("Check results and order", () => {
-    const hook = new SyncWaterfallHook<{ name: string }>(null, "test");
-    expect(hook.type).toBe("test");
+    const hook = new SyncWaterfallHook<{ name: string }>(null);
+    expect(hook.type).toBe("SyncWaterfallHook");
 
     hook.on((data) => {
       expect(data.name).toBe("chen");

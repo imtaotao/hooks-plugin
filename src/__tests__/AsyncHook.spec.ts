@@ -3,8 +3,8 @@ import { AsyncHook } from "../../index";
 describe("AsyncHook", () => {
   it("Check return value", async () => {
     let i = 0;
-    const hook = new AsyncHook<[string]>(null, "test");
-    expect(hook.type).toBe("test");
+    const hook = new AsyncHook<[string]>(null);
+    expect(hook.type).toBe("AsyncHook");
 
     hook.on(async (a) => {
       expect(i).toBe(0);

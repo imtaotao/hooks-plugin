@@ -1,24 +1,56 @@
 import { PREFIX, assert, isPlainObject } from "./Utils";
-import type { Plugin, PluginApis } from "./Interface";
+import type { SyncHook } from "./SyncHook";
+import type { Plugin, PluginApis, EachCallback, HookType } from "./Interface";
 
 export class PluginSystem<T extends Record<string, unknown>> {
-  private locked: boolean;
+  private _locked: boolean;
   public lifecycle: T;
   public v = __VERSION__;
   public plugins: Record<string, Plugin<T, PluginApis[string]>>;
 
   constructor(lifecycle: T) {
-    this.locked = false;
+    this._locked = false;
     this.plugins = Object.create(null);
     this.lifecycle = lifecycle;
   }
 
+  private _addEmitLifeHook<T extends Array<unknown>, C>(
+    type: "before" | "after",
+    fn: EachCallback<T, C>
+  ) {
+    let map = Object.create(null);
+    for (const name in this.lifecycle) {
+      map[name] = (type: HookType, context: C, args: T) => {
+        fn({ name, type, args, context });
+      };
+      (this.lifecycle[name] as SyncHook<T, C>)[type]!.on(map[name]);
+    }
+    return () => {
+      for (const name in this.lifecycle) {
+        (this.lifecycle[name] as SyncHook<T, C>)[type]!.remove(map[name]);
+      }
+      map = Object.create(null);
+    };
+  }
+
   lock() {
-    this.locked = true;
+    this._locked = true;
   }
 
   unlock() {
-    this.locked = false;
+    this._locked = false;
+  }
+
+  beforeEach<T extends Array<unknown>, C extends unknown>(
+    fn: EachCallback<T, C>
+  ) {
+    return this._addEmitLifeHook<T, C>("before", fn);
+  }
+
+  afterEach<T extends Array<unknown>, C extends unknown>(
+    fn: EachCallback<T, C>
+  ) {
+    return this._addEmitLifeHook<T, C>("after", fn);
   }
 
   getPluginApis<N extends keyof PluginApis>(pluginName: N) {
@@ -26,10 +58,9 @@ export class PluginSystem<T extends Record<string, unknown>> {
       .apis as PluginApis[typeof pluginName];
   }
 
-  // When plugins inherit from each other, pass generics
   use<P extends Plugin<T, Record<string, unknown>>>(plugin: P) {
     assert(
-      !this.locked,
+      !this._locked,
       "The plugin system is locked and new plugins cannot be added."
     );
     assert(isPlainObject(plugin), "Invalid plugin configuration.");
@@ -64,7 +95,7 @@ export class PluginSystem<T extends Record<string, unknown>> {
 
   remove(pluginName: string) {
     assert(
-      !this.locked,
+      !this._locked,
       "The plugin system has been locked and the plugin cannot be cleared."
     );
     assert(pluginName, 'Must provide a "name".');

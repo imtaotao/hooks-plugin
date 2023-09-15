@@ -1,19 +1,20 @@
 import { SyncHook } from "./SyncHook";
 import type { ArgsType, CallbackReturnType } from "./Interface";
 
-export class AsyncHook<T, C = null> extends SyncHook<
+export class AsyncHook<T extends Array<unknown>, C = null> extends SyncHook<
   T,
   C,
   CallbackReturnType<void>
 > {
-  constructor(context?: C, type = "AsyncHook") {
-    super(context, type);
+  constructor(context?: C) {
+    super(context, "AsyncHook");
   }
 
   emit(...data: ArgsType<T>): Promise<CallbackReturnType<void>> {
     let result: any;
     const ls = Array.from(this.listeners);
     if (ls.length > 0) {
+      this.before?.emit(this.type, this.context, data);
       let i = 0;
       const call = (prev?: unknown): unknown => {
         if (prev === false) {
@@ -26,6 +27,11 @@ export class AsyncHook<T, C = null> extends SyncHook<
       };
       result = call();
     }
-    return Promise.resolve(result);
+    return Promise.resolve(result).then((result) => {
+      if (ls.length > 0) {
+        this.after?.emit(this.type, this.context, data);
+      }
+      return result;
+    });
   }
 }

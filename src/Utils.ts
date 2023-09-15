@@ -1,5 +1,7 @@
 const objectToString = Object.prototype.toString;
 
+export const INTERNAL = Symbol("hooksPlugin");
+
 export function isPlainObject(val: unknown): val is Object {
   return objectToString.call(val) === "[object Object]";
 }

@@ -121,8 +121,8 @@ describe("AsyncParallelHook", () => {
   });
 
   it("Check type", async () => {
-    expect(new AsyncParallelHook(null, "test").type).toBe("test");
     expect(new AsyncParallelHook().type).toBe("AsyncParallelHook");
+    expect(new AsyncParallelHook(null).type).toBe("AsyncParallelHook");
   });
 
   it("Check this", async () => {

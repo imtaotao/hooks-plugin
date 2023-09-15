@@ -1,17 +1,21 @@
-import { assert } from "./Utils";
-import type { ArgsType, Callback } from "./Interface";
+import { assert, INTERNAL } from "./Utils";
+import type { ArgsType, Callback, HookType } from "./Interface";
 
-export class SyncHook<T, C = null, K = void> {
+export class SyncHook<T extends Array<unknown>, C = null, K = void> {
   public context: C;
-  public type: string;
+  public type: HookType;
   public listeners = new Set<Callback<T, C, K>>();
+  public before?: SyncHook<[HookType, C, ArgsType<T>]>;
+  public after?: SyncHook<[HookType, C, ArgsType<T>]>;
 
-  constructor(context?: C, type = "SyncHook") {
-    this.type = type;
-    // prettier-ignore
-    this.context = typeof context === "undefined"
-      ? (null as any)
-      : context;
+  // Only `context` is allowed to be passed in from outside
+  constructor(context?: C, _type: HookType = "SyncHook", _internal?: Symbol) {
+    this.type = _type;
+    this.context = typeof context === "undefined" ? (null as any) : context;
+    if (_internal !== INTERNAL) {
+      this.before = new SyncHook(null, "SyncHook", INTERNAL);
+      this.after = new SyncHook(null, "SyncHook", INTERNAL);
+    }
   }
 
   on(fn: Callback<T, C, K>) {
@@ -29,12 +33,10 @@ export class SyncHook<T, C = null, K = void> {
 
   emit(...data: ArgsType<T>) {
     if (this.listeners.size > 0) {
+      this.before?.emit(this.type, this.context, data);
       this.listeners.forEach((fn) => fn.apply(this.context, data));
+      this.after?.emit(this.type, this.context, data);
     }
-  }
-
-  clone(): this {
-    return new (this.constructor as any)(this.context, this.type);
   }
 
   remove(fn: Callback<T, C, K>) {
@@ -43,5 +45,13 @@ export class SyncHook<T, C = null, K = void> {
 
   removeAll() {
     this.listeners.clear();
+  }
+
+  clone(): this {
+    return new (this.constructor as any)(
+      this.context,
+      this.type,
+      this.before ? null : INTERNAL
+    );
   }
 }

@@ -16,6 +16,13 @@
       AsyncParallelHook,
       AsyncWaterfallHook,
     } = HooksPlugin;
+
+    const plSys = new PluginSystem({});
+
+    plSys.use({
+      name: 'test',
+      hooks: {},
+    })
   </script>
 </body>
 </html>

@@ -2,8 +2,8 @@ import { AsyncWaterfallHook } from "../../index";
 
 describe("AsyncWaterfallHook", () => {
   it("Check order, results and errors", async () => {
-    const hook = new AsyncWaterfallHook<{ name: string }>(null, "test");
-    expect(hook.type).toBe("test");
+    const hook = new AsyncWaterfallHook<{ name: string }>(null);
+    expect(hook.type).toBe("AsyncWaterfallHook");
 
     hook.on(async (data) => {
       expect(data.name).toBe("chen");

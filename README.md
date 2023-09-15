@@ -5,7 +5,7 @@
 
 </div>
 
-Plugin system built through various hooks, inspired by [tapable](https://github.com/webpack/tapable). it is very small, only having 200 lines after bundling, but it has fully-fledged and powerful TypeScript type hinting/type checking.
+Plugin system built through various hooks, inspired by [tapable](https://github.com/webpack/tapable). it is very small, only having 300 lines after bundling, but it has fully-fledged and powerful TypeScript type hinting/type checking.
 
 
 ## Usage
@@ -107,6 +107,49 @@ apis.set("a", 1);
 ```
 
 
+`beforeEach` and  `afterEach`.
+
+```ts
+import { SyncHook, PluginSystem } from "hooks-plugin";
+
+const plSys = new PluginSystem({
+  a: new SyncHook(),
+});
+
+plSys.use({
+  name: "test",
+  hooks: {
+    a(data) {},
+  },
+});
+
+// Registers a (sync) callback to be called before each hook is being called.
+const removeBeforeEach = plSys.beforeEach((e) => {
+  console.log("name:", e.name);
+  console.log("type:", e.type);
+  console.log("args:", e.args);
+  console.log("context:", e.context);
+});
+
+// Registers a (sync) callback to be called after each hook is being called.
+const removeAfterEach = plSys.afterEach((e) => {
+  console.log("name:", e.name);
+  console.log("type:", e.type);
+  console.log("args:", e.args);
+  console.log("context:", e.context);
+});
+
+plSys.lifecycle.a.emit(1);
+
+// remove
+removeBeforeEach();
+removeAfterEach();
+
+// Listening will no longer be triggered
+plSys.lifecycle.a.emit(2);
+```
+
+
 ## Hook list
 
 - `SyncHook`
@@ -122,6 +165,8 @@ apis.set("a", 1);
 - `plSys.lock`
 - `plSys.unlock`
 - `plSys.remove`
+- `plSys.beforeEach`
+- `plSys.afterEach`
 - `plSys.getPluginApis`
 
 
