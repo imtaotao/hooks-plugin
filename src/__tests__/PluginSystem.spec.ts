@@ -18,6 +18,12 @@ describe("PluginSystem", () => {
     expect(typeof plSys.v === "string").toBe(true);
   });
 
+  it("Check use response", () => {
+    const plugin = { name: "test" };
+    const plSys = new PluginSystem({});
+    expect(plSys.use(plugin) === plugin).toBe(true);
+  });
+
   it("Check plugin version", () => {
     const plSys = new PluginSystem({});
     plSys.use({
@@ -141,6 +147,20 @@ describe("PluginSystem", () => {
     expect(i).toBe(1);
     plSys.lifecycle.b.emit();
     expect(j).toBe(1);
+  });
+
+  it("Repeat add plugin", () => {
+    const plSys = new PluginSystem({});
+
+    plSys.use({
+      name: "test",
+    });
+
+    expect(() => {
+      plSys.use({
+        name: "test",
+      });
+    }).toThrowError();
   });
 
   it("Plugin System lock and unlock", () => {
@@ -269,6 +289,79 @@ describe("PluginSystem", () => {
     });
 
     plSys.lifecycle.a.emit(1);
+  });
+
+  it("Clone pluginSystem", async () => {
+    let i = 0;
+
+    const plSys = new PluginSystem({
+      a: new SyncHook<[number], string>("ctx"),
+      b: new AsyncParallelHook<[number], Record<string, never>>({}),
+    });
+
+    plSys.use({
+      name: "test",
+      hooks: {
+        a(data) {
+          expect(data).toBe(1);
+          i++;
+        },
+        async b(data) {
+          expect(data).toBe(2);
+          i++;
+        },
+      },
+    });
+
+    plSys.use({
+      name: "test2",
+      hooks: {
+        a(data) {
+          expect(data).toBe(1);
+          i++;
+        },
+        async b(data) {
+          expect(data).toBe(2);
+          i++;
+        },
+      },
+    });
+
+    plSys.lifecycle.a.emit(1);
+    await plSys.lifecycle.b.emit(2);
+    expect(i).toBe(4);
+
+    i = 0;
+    const cloned1 = plSys.clone();
+    cloned1.lifecycle.a.emit(1);
+    await cloned1.lifecycle.b.emit(2);
+    expect(i).toBe(0);
+
+    i = 0;
+    const cloned2 = plSys.clone(true);
+    cloned2.lifecycle.a.emit(1);
+    await cloned2.lifecycle.b.emit(2);
+    expect(i).toBe(4);
+
+    // Use new plugin
+    cloned2.use({
+      name: "test3",
+      hooks: {
+        a(data) {
+          expect(data).toBe(1);
+          i++;
+        },
+        async b(data) {
+          expect(data).toBe(2);
+          i++;
+        },
+      },
+    });
+
+    i = 0;
+    cloned2.lifecycle.a.emit(1);
+    await cloned2.lifecycle.b.emit(2);
+    expect(i).toBe(6);
   });
 
   it("Type test", async () => {

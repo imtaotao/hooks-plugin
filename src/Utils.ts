@@ -2,6 +2,19 @@ const objectToString = Object.prototype.toString;
 
 export const INTERNAL = Symbol("hooksPlugin");
 
+export const isBrowser = typeof window !== "undefined";
+
+let id = 1;
+export function createTaskId() {
+  return id++;
+}
+
+export function currentTime() {
+  return typeof performance?.now === "function"
+    ? performance.now()
+    : Date.now();
+}
+
 export function isPlainObject(val: unknown): val is Object {
   return objectToString.call(val) === "[object Object]";
 }

@@ -24,38 +24,34 @@ describe("TriggerEach", () => {
     });
 
     let i = 0;
-    const remove1 = plSys.beforeEach<[number], string>((e) => {
+    const unsubscribeBefore = plSys.beforeEach<[number], string>((e) => {
       expect(i).toBe(0);
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("SyncHook");
+      expect(e.context).toBe("");
+      expect(e.args).toEqual([1]);
       i++;
-      expect(e).toEqual({
-        name: "a",
-        type: "SyncHook",
-        context: "",
-        args: [1],
-      });
     });
 
-    const remove2 = plSys.afterEach<[number], string>((e) => {
+    const unsubscribeAfter = plSys.afterEach<[number], string>((e) => {
       expect(i).toBe(1);
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("SyncHook");
+      expect(e.context).toBe("");
+      expect(e.args).toEqual([1]);
       i++;
-      expect(e).toEqual({
-        name: "a",
-        type: "SyncHook",
-        context: "",
-        args: [1],
-      });
     });
 
     plSys.lifecycle.a.emit(1);
     expect(i).toBe(2);
 
     i = 0;
-    remove2();
+    unsubscribeAfter();
     plSys.lifecycle.a.emit(1);
     expect(i).toBe(1);
 
     i = 0;
-    remove1();
+    unsubscribeBefore();
     plSys.lifecycle.a.emit(1);
     expect(i).toBe(0);
   });
@@ -76,38 +72,34 @@ describe("TriggerEach", () => {
     });
 
     let i = 0;
-    const remove1 = plSys.beforeEach<[{ n: number }], string>((e) => {
+    const unsubscribeBefore = plSys.beforeEach<[{ n: number }], string>((e) => {
       expect(i).toBe(0);
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("SyncWaterfallHook");
+      expect(e.context).toBe("");
+      expect(e.args).toEqual([{ n: 1 }]);
       i++;
-      expect(e).toEqual({
-        name: "a",
-        type: "SyncWaterfallHook",
-        context: "",
-        args: [{ n: 1 }],
-      });
     });
 
-    const remove2 = plSys.afterEach<[{ n: number }], string>((e) => {
+    const unsubscribeAfter = plSys.afterEach<[{ n: number }], string>((e) => {
       expect(i).toBe(1);
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("SyncWaterfallHook");
+      expect(e.context).toBe("");
+      expect(e.args).toEqual([{ n: 1 }]);
       i++;
-      expect(e).toEqual({
-        name: "a",
-        type: "SyncWaterfallHook",
-        context: "",
-        args: [{ n: 1 }],
-      });
     });
 
     plSys.lifecycle.a.emit({ n: 1 });
     expect(i).toBe(2);
 
     i = 0;
-    remove2();
+    unsubscribeAfter();
     plSys.lifecycle.a.emit({ n: 1 });
     expect(i).toBe(1);
 
     i = 0;
-    remove1();
+    unsubscribeBefore();
     plSys.lifecycle.a.emit({ n: 1 });
     expect(i).toBe(0);
   });
@@ -127,38 +119,34 @@ describe("TriggerEach", () => {
     });
 
     let i = 0;
-    const remove1 = plSys.beforeEach<[number], string>((e) => {
+    const unsubscribeBefore = plSys.beforeEach<[number], string>((e) => {
       expect(i).toBe(0);
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("AsyncHook");
+      expect(e.context).toBe("");
+      expect(e.args).toEqual([1]);
       i++;
-      expect(e).toEqual({
-        name: "a",
-        type: "AsyncHook",
-        context: "",
-        args: [1],
-      });
     });
 
-    const remove2 = plSys.afterEach<[number], string>((e) => {
+    const unsubscribeAfter = plSys.afterEach<[number], string>((e) => {
       expect(i).toBe(1);
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("AsyncHook");
+      expect(e.context).toBe("");
+      expect(e.args).toEqual([1]);
       i++;
-      expect(e).toEqual({
-        name: "a",
-        type: "AsyncHook",
-        context: "",
-        args: [1],
-      });
     });
 
     await plSys.lifecycle.a.emit(1);
     expect(i).toBe(2);
 
     i = 0;
-    remove2();
+    unsubscribeAfter();
     await plSys.lifecycle.a.emit(1);
     expect(i).toBe(1);
 
     i = 0;
-    remove1();
+    unsubscribeBefore();
     await plSys.lifecycle.a.emit(1);
     expect(i).toBe(0);
   });
@@ -178,38 +166,34 @@ describe("TriggerEach", () => {
     });
 
     let i = 0;
-    const remove1 = plSys.beforeEach<[number], string>((e) => {
+    const unsubscribeBefore = plSys.beforeEach<[number], string>((e) => {
       expect(i).toBe(0);
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("AsyncParallelHook");
+      expect(e.context).toBe("");
+      expect(e.args).toEqual([1]);
       i++;
-      expect(e).toEqual({
-        name: "a",
-        type: "AsyncParallelHook",
-        context: "",
-        args: [1],
-      });
     });
 
-    const remove2 = plSys.afterEach<[number], string>((e) => {
+    const unsubscribeAfter = plSys.afterEach<[number], string>((e) => {
       expect(i).toBe(1);
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("AsyncParallelHook");
+      expect(e.context).toBe("");
+      expect(e.args).toEqual([1]);
       i++;
-      expect(e).toEqual({
-        name: "a",
-        type: "AsyncParallelHook",
-        context: "",
-        args: [1],
-      });
     });
 
     await plSys.lifecycle.a.emit(1);
     expect(i).toBe(2);
 
     i = 0;
-    remove2();
+    unsubscribeAfter();
     await plSys.lifecycle.a.emit(1);
     expect(i).toBe(1);
 
     i = 0;
-    remove1();
+    unsubscribeBefore();
     await plSys.lifecycle.a.emit(1);
     expect(i).toBe(0);
   });
@@ -230,38 +214,34 @@ describe("TriggerEach", () => {
     });
 
     let i = 0;
-    const remove1 = plSys.beforeEach<[{ n: number }], string>((e) => {
+    const unsubscribeBefore = plSys.beforeEach<[{ n: number }], string>((e) => {
       expect(i).toBe(0);
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("AsyncWaterfallHook");
+      expect(e.context).toBe("");
+      expect(e.args).toEqual([{ n: 1 }]);
       i++;
-      expect(e).toEqual({
-        name: "a",
-        type: "AsyncWaterfallHook",
-        context: "",
-        args: [{ n: 1 }],
-      });
     });
 
-    const remove2 = plSys.afterEach<[{ n: number }], string>((e) => {
+    const unsubscribeAfter = plSys.afterEach<[{ n: number }], string>((e) => {
       expect(i).toBe(1);
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("AsyncWaterfallHook");
+      expect(e.context).toBe("");
+      expect(e.args).toEqual([{ n: 1 }]);
       i++;
-      expect(e).toEqual({
-        name: "a",
-        type: "AsyncWaterfallHook",
-        context: "",
-        args: [{ n: 1 }],
-      });
     });
 
     await plSys.lifecycle.a.emit({ n: 1 });
     expect(i).toBe(2);
 
     i = 0;
-    remove2();
+    unsubscribeAfter();
     await plSys.lifecycle.a.emit({ n: 1 });
     expect(i).toBe(1);
 
     i = 0;
-    remove1();
+    unsubscribeBefore();
     await plSys.lifecycle.a.emit({ n: 1 });
     expect(i).toBe(0);
   });
@@ -283,23 +263,19 @@ describe("TriggerEach", () => {
     let i = 0;
 
     plSys.beforeEach<[number], Record<string, never>>((e) => {
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("AsyncHook");
+      expect(e.context).toEqual({});
+      expect(e.args).toEqual([1]);
       i++;
-      expect(e).toEqual({
-        name: "a",
-        type: "AsyncHook",
-        context: {},
-        args: [1],
-      });
     });
 
     plSys.afterEach<[number], Record<string, never>>((e) => {
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("AsyncHook");
+      expect(e.context).toEqual({});
+      expect(e.args).toEqual([1]);
       i++;
-      expect(e).toEqual({
-        name: "a",
-        type: "AsyncHook",
-        context: {},
-        args: [1],
-      });
     });
 
     await plSys.lifecycle.a.emit(1);
@@ -327,23 +303,19 @@ describe("TriggerEach", () => {
     let i = 0;
 
     plSys.beforeEach<[number], Record<string, never>>((e) => {
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("AsyncParallelHook");
+      expect(e.context).toEqual({});
+      expect(e.args).toEqual([1]);
       i++;
-      expect(e).toEqual({
-        name: "a",
-        type: "AsyncParallelHook",
-        context: {},
-        args: [1],
-      });
     });
 
     plSys.afterEach<[number], Record<string, never>>((e) => {
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("AsyncParallelHook");
+      expect(e.context).toEqual({});
+      expect(e.args).toEqual([1]);
       i++;
-      expect(e).toEqual({
-        name: "a",
-        type: "AsyncParallelHook",
-        context: {},
-        args: [1],
-      });
     });
 
     await plSys.lifecycle.a.emit(1);
@@ -372,23 +344,19 @@ describe("TriggerEach", () => {
     let i = 0;
 
     plSys.beforeEach<[{ n: number }], Record<string, never>>((e) => {
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("AsyncWaterfallHook");
+      expect(e.context).toEqual({});
+      expect(e.args).toEqual([{ n: 1 }]);
       i++;
-      expect(e).toEqual({
-        name: "a",
-        type: "AsyncWaterfallHook",
-        context: {},
-        args: [{ n: 1 }],
-      });
     });
 
     plSys.afterEach<[{ n: number }], Record<string, never>>((e) => {
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("AsyncWaterfallHook");
+      expect(e.context).toEqual({});
+      expect(e.args).toEqual([{ n: 1 }]);
       i++;
-      expect(e).toEqual({
-        name: "a",
-        type: "AsyncWaterfallHook",
-        context: {},
-        args: [{ n: 1 }],
-      });
     });
 
     await plSys.lifecycle.a.emit({ n: 1 });
@@ -397,5 +365,46 @@ describe("TriggerEach", () => {
     i = 0;
     await plSys.lifecycle.a.emit({ n: 1 });
     expect(i).toBe(0);
+  });
+
+  it("Check taskId", () => {
+    const plSys = new PluginSystem({
+      a: new SyncHook<[number], string>(""),
+    });
+
+    plSys.use({
+      name: "test",
+      hooks: {
+        a(data) {
+          expect(data).toBe(1);
+        },
+      },
+    });
+
+    let i = 0;
+    let id: unknown;
+
+    plSys.beforeEach<[number], string>((e) => {
+      id = e.id;
+      expect(i).toBe(0);
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("SyncHook");
+      expect(e.context).toBe("");
+      expect(e.args).toEqual([1]);
+      i++;
+    });
+
+    plSys.afterEach<[number], string>((e) => {
+      expect(i).toBe(1);
+      expect(id === e.id).toBe(true);
+      expect(e.name).toBe("a");
+      expect(e.type).toBe("SyncHook");
+      expect(e.context).toBe("");
+      expect(e.args).toEqual([1]);
+      i++;
+    });
+
+    plSys.lifecycle.a.emit(1);
+    expect(i).toBe(2);
   });
 });

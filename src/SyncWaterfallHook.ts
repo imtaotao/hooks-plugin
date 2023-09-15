@@ -1,5 +1,5 @@
 import { SyncHook } from "./SyncHook";
-import { assert, isPlainObject, checkReturnData } from "./Utils";
+import { assert, isPlainObject, checkReturnData, createTaskId } from "./Utils";
 
 export class SyncWaterfallHook<
   T extends Record<any, unknown>,
@@ -15,7 +15,8 @@ export class SyncWaterfallHook<
       `"${this.type}" hook response data must be an object.`
     );
     if (this.listeners.size > 0) {
-      this.before?.emit(this.type, this.context, [data]);
+      const id = createTaskId();
+      this.before?.emit(id, this.type, this.context, [data]);
       for (const fn of this.listeners) {
         const tempData = fn.call(this.context, data);
         assert(
@@ -24,7 +25,7 @@ export class SyncWaterfallHook<
         );
         data = tempData;
       }
-      this.after?.emit(this.type, this.context, [data]);
+      this.after?.emit(id, this.type, this.context, [data]);
     }
     return data;
   }

@@ -1,6 +1,6 @@
 import { SyncHook } from "./SyncHook";
-import { assert, isPlainObject, checkReturnData } from "./Utils";
-import type { CallbackReturnType } from "./Interface";
+import { assert, isPlainObject, checkReturnData, createTaskId } from "./Utils";
+import type { TaskId, CallbackReturnType } from "./Interface";
 
 export class AsyncWaterfallHook<
   T extends Record<any, unknown>,
@@ -15,12 +15,14 @@ export class AsyncWaterfallHook<
       isPlainObject(data),
       `"${this.type}" hook response data must be an object.`
     );
+    let i = 0;
+    let id: TaskId;
     const ls = Array.from(this.listeners);
 
     if (ls.length > 0) {
-      this.before?.emit(this.type, this.context, [data]);
+      id = createTaskId();
+      this.before?.emit(id, this.type, this.context, [data]);
 
-      let i = 0;
       const call = (prevData: T | false): any => {
         if (prevData === false) {
           return false;
@@ -36,8 +38,9 @@ export class AsyncWaterfallHook<
         }
         return data;
       };
+
       return Promise.resolve(call(data)).then((data) => {
-        this.after?.emit(this.type, this.context, [data]);
+        this.after?.emit(id, this.type, this.context, [data]);
         return data;
       });
     } else {

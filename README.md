@@ -8,9 +8,30 @@
 Plugin system built through various hooks, inspired by [tapable](https://github.com/webpack/tapable). it is very small, only having 300 lines after bundling, but it has fully-fledged and powerful TypeScript type hinting/type checking.
 
 
+## Hook list
+
+- `SyncHook`
+- `SyncWaterfallHook`
+- `AsyncHook`
+- `AsyncWaterfallHook`
+- `AsyncParallelHook`
+
+
+## Apis
+
+- `plSys.use`
+- `plSys.remove`
+- `plSys.beforeEach`
+- `plSys.afterEach`
+- `plSys.lock`
+- `plSys.unlock`
+- `plSys.clone`
+- `plSys.getPluginApis`
+
+
 ## Usage
 
-Simple example
+### Simple example
 
 ```ts
 import { SyncHook, PluginSystem } from "hooks-plugin";
@@ -35,7 +56,7 @@ plSys.lifecycle.a.emit("str", 1);
 ```
 
 
-More complex example
+### More complex example
 
 ```ts
 import { AsyncHook, PluginSystem } from "hooks-plugin";
@@ -78,7 +99,7 @@ plSys.lifecycle.b.emit({ value: 1 });
 ```
 
 
-Interact with other plugins
+### Interact with other plugins
 
 ```ts
 import { SyncHook, PluginSystem } from "hooks-plugin";
@@ -107,7 +128,7 @@ apis.set("a", 1);
 ```
 
 
-`beforeEach` and  `afterEach`.
+### `beforeEach` and  `afterEach`.
 
 ```ts
 import { SyncHook, PluginSystem } from "hooks-plugin";
@@ -124,7 +145,9 @@ plSys.use({
 });
 
 // Registers a (sync) callback to be called before each hook is being called.
-const removeBeforeEach = plSys.beforeEach((e) => {
+// `id`` is an arbitrary value, used to maintain consistency with `afterEach`
+const unsubscribeBefore = plSys.beforeEach((e) => {
+  console.log("id:", e.id);
   console.log("name:", e.name);
   console.log("type:", e.type);
   console.log("args:", e.args);
@@ -132,7 +155,8 @@ const removeBeforeEach = plSys.beforeEach((e) => {
 });
 
 // Registers a (sync) callback to be called after each hook is being called.
-const removeAfterEach = plSys.afterEach((e) => {
+const unsubscribeAfter = plSys.afterEach((e) => {
+  console.log("id:", e.id);
   console.log("name:", e.name);
   console.log("type:", e.type);
   console.log("args:", e.args);
@@ -141,33 +165,51 @@ const removeAfterEach = plSys.afterEach((e) => {
 
 plSys.lifecycle.a.emit(1);
 
-// remove
-removeBeforeEach();
-removeAfterEach();
+unsubscribeBefore();
+unsubscribeAfter();
 
 // Listening will no longer be triggered
 plSys.lifecycle.a.emit(2);
 ```
 
 
-## Hook list
+### Debug
 
-- `SyncHook`
-- `SyncWaterfallHook`
-- `AsyncHook`
-- `AsyncWaterfallHook`
-- `AsyncParallelHook`
+```ts
+import { SyncHook, PluginSystem } from "hooks-plugin";
 
+const plSys = new PluginSystem({
+  a: new AsyncParallelHook("ctx"),
+});
 
-## Apis
+plSys.use({
+  name: "test",
+  hooks: {
+    a() {
+      return new Promise((resolve) => {
+        setTimeout(resolve, 300);
+      });
+    },
+  },
+});
 
-- `plSys.use`
-- `plSys.lock`
-- `plSys.unlock`
-- `plSys.remove`
-- `plSys.beforeEach`
-- `plSys.afterEach`
-- `plSys.getPluginApis`
+const close = plSys.debug({ tag: "tag" });
+plSys.lifecycle.a.emit(1, 2);
+// [tag]: a_1(t, args, ctx): 309.36 ms (2) [1, 2] 'ctx'
+
+// Close debug mode
+close();
+
+// You can also pass a `receiver` to handle log data yourself.
+const close = plSys.debug({
+  tag: "tag",
+  receiver(data) {
+    console.log(data); // { e, tag, time }
+  },
+  // filter(data) { ... },
+});
+plSys.lifecycle.a.emit(1, 2);
+```
 
 
 ## CDN

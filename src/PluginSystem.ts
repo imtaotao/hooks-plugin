@@ -1,6 +1,13 @@
-import { PREFIX, assert, isPlainObject } from "./Utils";
+import { assert, isPlainObject } from "./Utils";
 import type { SyncHook } from "./SyncHook";
-import type { Plugin, PluginApis, EachCallback, HookType } from "./Interface";
+import { type DebuggerOptions, createDebugger } from "./Debugger";
+import type {
+  Plugin,
+  PluginApis,
+  TaskId,
+  HookType,
+  EachCallback,
+} from "./Interface";
 
 export class PluginSystem<T extends Record<string, unknown>> {
   private _locked: boolean;
@@ -20,11 +27,13 @@ export class PluginSystem<T extends Record<string, unknown>> {
   ) {
     let map = Object.create(null);
     for (const name in this.lifecycle) {
-      map[name] = (type: HookType, context: C, args: T) => {
-        fn({ name, type, args, context });
+      map[name] = (id: TaskId, type: HookType, context: C, args: T) => {
+        // Disallow deleting `id` as it may cause confusion.
+        fn(Object.freeze({ id, name, type, args, context }));
       };
       (this.lifecycle[name] as SyncHook<T, C>)[type]!.on(map[name]);
     }
+
     return () => {
       for (const name in this.lifecycle) {
         (this.lifecycle[name] as SyncHook<T, C>)[type]!.remove(map[name]);
@@ -33,31 +42,56 @@ export class PluginSystem<T extends Record<string, unknown>> {
     };
   }
 
+  /**
+   * Lock the plugin system. After locking, you will not be able to register and uninstall plugins.
+   */
   lock() {
     this._locked = true;
   }
 
+  /**
+   * Unlock the plugin system. After unlocking, you can re-register and uninstall plugins.
+   */
   unlock() {
     this._locked = false;
   }
 
+  /**
+   * Registers a (sync) callback to be called before each hook is being called.
+   */
   beforeEach<T extends Array<unknown>, C extends unknown>(
     fn: EachCallback<T, C>
   ) {
     return this._addEmitLifeHook<T, C>("before", fn);
   }
 
+  /**
+   * Registers a (sync) callback to be called after each hook is being called.
+   */
   afterEach<T extends Array<unknown>, C extends unknown>(
     fn: EachCallback<T, C>
   ) {
     return this._addEmitLifeHook<T, C>("after", fn);
   }
 
+  /**
+   * Get the `apis` of a plugin.
+   */
   getPluginApis<N extends keyof PluginApis>(pluginName: N) {
     return this.plugins[pluginName as string]
       .apis as PluginApis[typeof pluginName];
   }
 
+  /**
+   * Enable debug mode.
+   */
+  debug(options: DebuggerOptions = {}): ReturnType<typeof createDebugger> {
+    return createDebugger(this, options);
+  }
+
+  /**
+   * Register plugin
+   */
   use<P extends Plugin<T, Record<string, unknown>>>(plugin: P) {
     assert(
       !this._locked,
@@ -65,42 +99,44 @@ export class PluginSystem<T extends Record<string, unknown>> {
     );
     assert(isPlainObject(plugin), "Invalid plugin configuration.");
     assert(plugin.name, 'Plugin must provide a "name".');
+    assert(
+      !this.plugins[plugin.name],
+      `Repeat to register plugin hooks "${plugin.name}".`
+    );
 
-    if (this.plugins[plugin.name]) {
-      console.warn(
-        `${PREFIX}: Repeat to register plugin hooks "${plugin.name}".`
-      );
-    } else {
-      this.plugins[plugin.name] = plugin;
-      const register = (obj?: P["hooks"], once?: boolean) => {
-        if (obj) {
-          for (const key in obj) {
-            assert(
-              this.lifecycle[key],
-              `"${key}" hook is not defined in plugin "${plugin.name}".`
-            );
-            if (once) {
-              (this.lifecycle[key] as any).once(obj[key]);
-            } else {
-              (this.lifecycle[key] as any).on(obj[key]);
-            }
+    this.plugins[plugin.name] = plugin;
+    const register = (obj?: P["hooks"], once?: boolean) => {
+      if (obj) {
+        for (const key in obj) {
+          assert(
+            this.lifecycle[key],
+            `"${key}" hook is not defined in plugin "${plugin.name}".`
+          );
+          if (once) {
+            (this.lifecycle[key] as any).once(obj[key]);
+          } else {
+            (this.lifecycle[key] as any).on(obj[key]);
           }
         }
-      };
-      register(plugin.hooks, false);
-      register(plugin.onceHooks, true);
-    }
-    return this.plugins[plugin.name] as P;
+      }
+    };
+    register(plugin.hooks, false);
+    register(plugin.onceHooks, true);
+
+    return plugin;
   }
 
+  /**
+   * Remove plugin
+   */
   remove(pluginName: string) {
     assert(
       !this._locked,
       "The plugin system has been locked and the plugin cannot be cleared."
     );
     assert(pluginName, 'Must provide a "name".');
-    const plugin = this.plugins[pluginName];
 
+    const plugin = this.plugins[pluginName];
     if (plugin) {
       const rm = (obj?: (typeof plugin)["hooks"]) => {
         if (obj) {
@@ -112,5 +148,23 @@ export class PluginSystem<T extends Record<string, unknown>> {
       rm(plugin.hooks);
       rm(plugin.onceHooks);
     }
+  }
+
+  /**
+   * Clone a brand new pluginSystem instance
+   */
+  clone(usePlugin?: boolean) {
+    const newLifecycle = {};
+    for (const key in this.lifecycle) {
+      (newLifecycle as any)[key] = (this.lifecycle[key] as any).clone();
+    }
+    const cloned: this = new (this.constructor as any)(newLifecycle);
+    if (usePlugin) {
+      for (const key in this.plugins) {
+        cloned.use(this.plugins[key]);
+      }
+    }
+
+    return cloned;
   }
 }

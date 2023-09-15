@@ -1,6 +1,6 @@
 {
   "name": "hooks-plugin",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "A plugin system built through various hooks.",
   "main": "./dist/hooks.cjs.js",
   "unpkg": "./dist/hooks.umd.js",
@@ -21,7 +21,8 @@
     "hooks",
     "plugin",
     "event",
-    "tapable"
+    "tapable",
+    "debug"
   ],
   "license": "MIT",
   "publishConfig": {

@@ -1,5 +1,7 @@
 import { SyncHook } from "./SyncHook";
-import type { ArgsType } from "./Interface";
+import { createTaskId } from "./Utils";
+import type { TaskId, ArgsType } from "./Interface";
+
 export class AsyncParallelHook<
   T extends Array<unknown>,
   C = null
@@ -9,12 +11,14 @@ export class AsyncParallelHook<
   }
 
   emit(...data: ArgsType<T>) {
+    let id: TaskId;
     const taskList: Array<unknown> = [];
     // Disclaimer in advance, `listeners` may change
     const size = this.listeners.size;
 
     if (size > 0) {
-      this.before?.emit(this.type, this.context, data);
+      id = createTaskId();
+      this.before?.emit(id, this.type, this.context, data);
       for (const fn of this.listeners) {
         taskList.push(
           Promise.resolve().then(() => fn.apply(this.context, data))
@@ -23,7 +27,7 @@ export class AsyncParallelHook<
     }
     return Promise.all(taskList).then(() => {
       if (size > 0) {
-        this.after?.emit(this.type, this.context, data);
+        this.after?.emit(id, this.type, this.context, data);
       }
     });
   }

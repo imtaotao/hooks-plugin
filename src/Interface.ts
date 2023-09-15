@@ -1,5 +1,7 @@
+import type { createTaskId } from "./Utils";
+
 // Plugins can extend this type themselves
-export interface PluginApis extends Record<string, unknown> {}
+export interface PluginApis extends Record<string, Record<string, unknown>> {}
 
 export interface Plugin<
   T extends Record<string, any>,
@@ -16,6 +18,16 @@ export interface Plugin<
   };
 }
 
+export interface EachEvent<T, C> {
+  id: TaskId;
+  args: T;
+  context: C;
+  name: string;
+  type: HookType;
+}
+
+export type TaskId = ReturnType<typeof createTaskId>;
+export type EachCallback<T, C> = (e: EachEvent<T, C>) => void;
 export type ArgsType<T> = T extends Array<any> ? T : Array<unknown>;
 export type CallbackReturnType<T> = T | false | Promise<T | false>;
 export type Callback<T, C, K> = (this: C, ...args: ArgsType<T>) => K;
@@ -25,10 +37,3 @@ export type HookType =
   | "AsyncHook"
   | "AsyncParallelHook"
   | "AsyncWaterfallHook";
-
-export type EachCallback<T, C> = (e: {
-  args: T;
-  context: C;
-  name: string;
-  type: HookType;
-}) => void;
