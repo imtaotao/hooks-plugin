@@ -51,7 +51,7 @@ describe("PluginSystem", () => {
     expect(() => {
       plSys.remove("a");
     }).not.toThrowError();
-    expect(Object.keys(plSys.hooks)).toEqual(["a", "b"]);
+    expect(Object.keys(plSys.lifecycle)).toEqual(["a", "b"]);
   });
 
   it("Check for hooks declared not to exist", () => {
@@ -91,9 +91,9 @@ describe("PluginSystem", () => {
     });
 
     // registered after once hook, so here is `2`
-    expect(plSys.hooks.a.emit({ value: 0 })).toEqual({ value: 2 });
-    expect(plSys.hooks.a.emit({ value: 0 })).toEqual({ value: 1 });
-    expect(plSys.hooks.a.emit({ value: 0 })).toEqual({ value: 1 });
+    expect(plSys.lifecycle.a.emit({ value: 0 })).toEqual({ value: 2 });
+    expect(plSys.lifecycle.a.emit({ value: 0 })).toEqual({ value: 1 });
+    expect(plSys.lifecycle.a.emit({ value: 0 })).toEqual({ value: 1 });
   });
 
   it("Add plugin and remove plugin", () => {
@@ -128,18 +128,18 @@ describe("PluginSystem", () => {
       },
     });
 
-    plSys.hooks.a.emit();
+    plSys.lifecycle.a.emit();
     expect(i).toBe(2);
-    plSys.hooks.b.emit();
+    plSys.lifecycle.b.emit();
     expect(j).toBe(2);
 
     i = 0;
     j = 0;
     plSys.remove("test1");
 
-    plSys.hooks.a.emit();
+    plSys.lifecycle.a.emit();
     expect(i).toBe(1);
-    plSys.hooks.b.emit();
+    plSys.lifecycle.b.emit();
     expect(j).toBe(1);
   });
 
@@ -171,7 +171,7 @@ describe("PluginSystem", () => {
       a: new SyncHook<[string], void>(),
     });
 
-    const obj: Plugin<typeof plSys.hooks> = {
+    const obj: Plugin<typeof plSys.lifecycle> = {
       name: "test",
       hooks: {
         a(s) {
@@ -181,7 +181,7 @@ describe("PluginSystem", () => {
     };
     const spy = jest.spyOn(obj.hooks!, "a");
     plSys.use(obj);
-    plSys.hooks.a.emit("chen");
+    plSys.lifecycle.a.emit("chen");
 
     expect(spy).toHaveBeenCalled();
     spy.mockReset();
@@ -214,17 +214,17 @@ describe("PluginSystem", () => {
       },
     });
 
-    plSys.hooks.a.emit();
+    plSys.lifecycle.a.emit();
     expect(i).toBe("ab");
 
     i = "";
     plSys.remove("test1");
-    plSys.hooks.a.emit();
+    plSys.lifecycle.a.emit();
     expect(i).toBe("b");
 
     i = "";
     plSys.remove("test2");
-    plSys.hooks.a.emit();
+    plSys.lifecycle.a.emit();
     expect(i).toBe("");
   });
 
@@ -250,7 +250,7 @@ describe("PluginSystem", () => {
       },
     });
 
-    plSys.hooks.a.emit(1);
+    plSys.lifecycle.a.emit(1);
   });
 
   it("Check this defaults to `null`", async () => {
@@ -268,7 +268,7 @@ describe("PluginSystem", () => {
       },
     });
 
-    plSys.hooks.a.emit(1);
+    plSys.lifecycle.a.emit(1);
   });
 
   it("Type test", async () => {
@@ -308,14 +308,14 @@ describe("PluginSystem", () => {
       },
     });
 
-    const res1 = plSys.hooks.syncHook.emit("str", 2);
+    const res1 = plSys.lifecycle.syncHook.emit("str", 2);
     expect(typeof res1 === "undefined").toBe(true);
 
-    const res2 = plSys.hooks.syncWaterfallHook.emit({ value: 1 });
+    const res2 = plSys.lifecycle.syncWaterfallHook.emit({ value: 1 });
     expect(typeof res2.value === "number").toBe(true);
 
     await (async () => {
-      const p = plSys.hooks.asyncHook.emit("str", 2);
+      const p = plSys.lifecycle.asyncHook.emit("str", 2);
       expect(typeof p.then === "function").toBe(true);
       const res = await p;
       if (res) {
@@ -324,7 +324,7 @@ describe("PluginSystem", () => {
     })();
 
     await (async () => {
-      const p = plSys.hooks.asyncWaterfallHook.emit({ value: 1 });
+      const p = plSys.lifecycle.asyncWaterfallHook.emit({ value: 1 });
       expect(typeof p.then === "function").toBe(true);
       const res = await p;
       if (res) {
@@ -333,7 +333,7 @@ describe("PluginSystem", () => {
     })();
 
     await (async () => {
-      const p = plSys.hooks.asyncParallelHook.emit({ value: 1 });
+      const p = plSys.lifecycle.asyncParallelHook.emit({ value: 1 });
       expect(typeof p.then === "function").toBe(true);
       const res = await p;
       expect(res).toBe(undefined);

@@ -102,7 +102,7 @@ describe("AsyncParallelHook", () => {
 
     // parallel hook
     const data1 = { n: 0 };
-    const task1 = plSys.hooks.parallel.emit(data1);
+    const task1 = plSys.lifecycle.parallel.emit(data1);
 
     expect(data1.n).toBe(0);
     expect(typeof task1.then === "function").toBe(true);
@@ -112,7 +112,7 @@ describe("AsyncParallelHook", () => {
 
     // waterfall hook
     const data2 = { n: 0 };
-    const task2 = plSys.hooks.waterfall.emit(data2);
+    const task2 = plSys.lifecycle.waterfall.emit(data2);
 
     expect(data2.n).toBe(0);
     const res2 = await task2;

@@ -31,7 +31,7 @@ plSys.use({
 });
 
 // Trigger hook
-plSys.hooks.a.emit("str", 1);
+plSys.lifecycle.a.emit("str", 1);
 ```
 
 
@@ -73,8 +73,8 @@ plSys.use({
   }
 });
 
-plSys.hooks.a.emit(1, 2);
-plSys.hooks.b.emit({ value: 1 });
+plSys.lifecycle.a.emit(1, 2);
+plSys.lifecycle.b.emit({ value: 1 });
 ```
 
 

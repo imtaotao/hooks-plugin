@@ -2,14 +2,15 @@ import { PREFIX, assert, isPlainObject } from "./Utils";
 import type { Plugin, PluginApis } from "./Interface";
 
 export class PluginSystem<T extends Record<string, unknown>> {
-  public hooks: T;
+  private locked: boolean;
+  public lifecycle: T;
   public v = __VERSION__;
-  public plugins: Record<string, Plugin<T, PluginApis[string]>> =
-    Object.create(null);
-  private locked: boolean = false;
+  public plugins: Record<string, Plugin<T, PluginApis[string]>>;
 
-  constructor(hooks: T) {
-    this.hooks = hooks;
+  constructor(lifecycle: T) {
+    this.locked = false;
+    this.plugins = Object.create(null);
+    this.lifecycle = lifecycle;
   }
 
   lock() {
@@ -44,13 +45,13 @@ export class PluginSystem<T extends Record<string, unknown>> {
         if (obj) {
           for (const key in obj) {
             assert(
-              this.hooks[key],
+              this.lifecycle[key],
               `"${key}" hook is not defined in plugin "${plugin.name}".`
             );
             if (once) {
-              (this.hooks[key] as any).once(obj[key]);
+              (this.lifecycle[key] as any).once(obj[key]);
             } else {
-              (this.hooks[key] as any).on(obj[key]);
+              (this.lifecycle[key] as any).on(obj[key]);
             }
           }
         }
@@ -73,7 +74,7 @@ export class PluginSystem<T extends Record<string, unknown>> {
       const rm = (obj?: (typeof plugin)["hooks"]) => {
         if (obj) {
           for (const key in obj) {
-            (this.hooks[key] as any).remove(obj[key]);
+            (this.lifecycle[key] as any).remove(obj[key]);
           }
         }
       };
