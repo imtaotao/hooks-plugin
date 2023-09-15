@@ -5,7 +5,7 @@
 
 </div>
 
-Plugin system built through various hooks, inspired by [tapable](https://github.com/webpack/tapable). it is very small, only having 300 lines after bundling, but it has fully-fledged and powerful TypeScript type hinting/type checking.
+Plugin system built through various hooks, inspired by [tapable](https://github.com/webpack/tapable). it is very small, but it has fully-fledged and powerful TypeScript type hinting/type checking.
 
 
 ## Hook list

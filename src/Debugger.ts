@@ -8,8 +8,6 @@ interface Data {
   e: EachEvent<unknown, unknown>;
 }
 
-type TaskRecord = { t: number; e: EachEvent<unknown, unknown> };
-
 export interface DebuggerOptions {
   tag?: string;
   group?: boolean;
@@ -22,13 +20,13 @@ export function createDebugger<T extends Record<string, unknown>>(
   options: DebuggerOptions
 ) {
   let { tag, group, filter, receiver } = options;
-  let map: Record<TaskId, TaskRecord> = Object.create(null);
+  let map: Record<TaskId, { t: number }> = Object.create(null);
 
   const _tag = tag ? `[${tag}]: ` : "";
   if (!("group" in options)) group = isBrowser;
 
   const unsubscribeBefore = plSys.beforeEach((e) => {
-    map[e.id] = { e, t: currentTime() };
+    map[e.id] = { t: currentTime() };
     if (typeof receiver !== "function") {
       console.time(`${_tag}${e.name}_${e.id}(t, args, ctx)`);
       if (group) console.groupCollapsed(e.name);
