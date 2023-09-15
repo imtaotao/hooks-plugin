@@ -29,7 +29,7 @@ const plugin = plSys.use({
 
 describe("GetOtherPlugin", () => {
   it("Get other plugin apis", () => {
-    const apis = plSys.getApis("testApis");
+    const apis = plSys.getPluginApis("testApis");
     apis.set("a", 1);
     expect(apis.get("a")).toBe(1);
   });

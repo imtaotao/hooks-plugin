@@ -100,7 +100,7 @@ const plugin = plSys.use({
   },
 });
 
-const apis = plSys.getApis("testApis");
+const apis = plSys.getPluginApis("testApis");
 
 apis.get("a");
 apis.set("a", 1);
@@ -122,7 +122,7 @@ apis.set("a", 1);
 - `plSys.lock`
 - `plSys.unlock`
 - `plSys.remove`
-- `plSys.getApis`
+- `plSys.getPluginApis`
 
 
 ## CDN

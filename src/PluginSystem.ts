@@ -20,7 +20,7 @@ export class PluginSystem<T extends Record<string, unknown>> {
     this.locked = false;
   }
 
-  getApis<N extends keyof PluginApis>(pluginName: N) {
+  getPluginApis<N extends keyof PluginApis>(pluginName: N) {
     return this.plugins[pluginName as string]
       .apis as PluginApis[typeof pluginName];
   }
