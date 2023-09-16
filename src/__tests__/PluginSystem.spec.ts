@@ -19,24 +19,70 @@ describe("PluginSystem", () => {
   });
 
   it("Check use response", () => {
-    const plugin = { name: "test" };
+    const plugin = {
+      name: "test",
+      hooks: {},
+    };
     const plSys = new PluginSystem({});
     expect(plSys.use(plugin) === plugin).toBe(true);
   });
 
   it("Check plugin version", () => {
     const plSys = new PluginSystem({});
+
     plSys.use({
-      name: "test",
+      name: "test1",
+      hooks: {},
     });
 
     plSys.use({
       name: "test2",
       version: "1.0",
+      hooks: {},
     });
 
-    expect(plSys.plugins["test"].version === undefined).toBe(true);
+    expect(plSys.plugins["test1"].version === undefined).toBe(true);
     expect(plSys.plugins["test2"].version === "1.0").toBe(true);
+  });
+
+  it("Check plugin is function", () => {
+    const plSys = new PluginSystem({
+      a: new SyncHook<[number], string>(""),
+    });
+
+    let i = 0;
+
+    const plugin = plSys.use((pl) => {
+      expect(pl === plSys).toBe(true);
+
+      return {
+        name: "test",
+        version: "1.0",
+        hooks: {
+          a(data) {
+            i++;
+            expect(data).toBe(1);
+            expect(this).toBe("");
+          },
+        },
+        onceHooks: {
+          a(data) {
+            i++;
+            expect(data).toBe(1);
+            expect(this).toBe("");
+          },
+        },
+      };
+    });
+
+    expect(plSys.plugins["test"] === plugin).toBe(true);
+    expect(plugin.name === "test").toBe(true);
+    expect(plugin.version === "1.0").toBe(true);
+    expect(Object.keys(plugin.hooks)).toEqual(["a"]);
+    expect(Object.keys(plugin.onceHooks)).toEqual(["a"]);
+
+    plSys.lifecycle.a.emit(1);
+    expect(i).toBe(2);
   });
 
   it("Check parameter", () => {
@@ -48,15 +94,23 @@ describe("PluginSystem", () => {
     expect(() => {
       plSys.use([] as any);
     }).toThrowError();
+
     expect(() => {
       plSys.use({} as any);
     }).toThrowError();
+
+    expect(() => {
+      plSys.use({ name: 1 } as any);
+    }).toThrowError();
+
     expect(() => {
       plSys.remove("");
     }).toThrowError();
+
     expect(() => {
       plSys.remove("a");
     }).not.toThrowError();
+
     expect(Object.keys(plSys.lifecycle)).toEqual(["a", "b"]);
   });
 
@@ -154,23 +208,25 @@ describe("PluginSystem", () => {
 
     plSys.use({
       name: "test",
+      hooks: {},
     });
 
     expect(() => {
       plSys.use({
         name: "test",
+        hooks: {},
       });
     }).toThrowError();
   });
 
   it("Plugin System lock and unlock", () => {
     const plSys = new PluginSystem({});
-    plSys.use({ name: "test" });
+    plSys.use({ name: "test", hooks: {} });
 
     plSys.lock();
 
     expect(() => {
-      plSys.use({ name: "test1" });
+      plSys.use({ name: "test1", hooks: {} });
     }).toThrowError();
     expect(() => {
       plSys.remove("test");
@@ -179,7 +235,7 @@ describe("PluginSystem", () => {
     plSys.unlock();
 
     expect(() => {
-      plSys.use({ name: "test1" });
+      plSys.use({ name: "test1", hooks: {} });
     }).not.toThrowError();
     expect(() => {
       plSys.remove("test");

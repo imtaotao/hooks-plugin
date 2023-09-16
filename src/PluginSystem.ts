@@ -2,16 +2,15 @@ import { assert, isPlainObject } from "./Utils";
 import type { SyncHook } from "./SyncHook";
 import { type DebuggerOptions, createDebugger } from "./Debugger";
 import type {
-  Plugin,
-  PluginApis,
   TaskId,
   HookType,
+  Plugin,
+  PluginApis,
   EachCallback,
 } from "./Interface";
 
 export class PluginSystem<T extends Record<string, unknown>> {
   private _locked: boolean;
-
   public lifecycle: T;
   public v = __VERSION__;
   public debugCount: number;
@@ -115,37 +114,38 @@ export class PluginSystem<T extends Record<string, unknown>> {
   /**
    * Register plugin
    */
-  use<P extends Plugin<T, Record<string, unknown>>>(plugin: P) {
+  use<P extends Plugin<T>>(plugin: P): P;
+  use<F extends (plSys: this) => Plugin<T>>(plugin: F): ReturnType<F>;
+  use(plugin: Plugin<T> | ((plSys: this) => Plugin<T>)) {
     assert(
       !this._locked,
       "The plugin system is locked and new plugins cannot be added."
     );
+    if (typeof plugin === "function") plugin = plugin(this);
     assert(isPlainObject(plugin), "Invalid plugin configuration.");
-    assert(plugin.name, 'Plugin must provide a "name".');
-    assert(
-      !this.plugins[plugin.name],
-      `Repeat to register plugin hooks "${plugin.name}".`
-    );
+    const { name } = plugin;
+    assert(name && typeof name === "string", 'Plugin must provide a "name".');
+    assert(!this.plugins[name], `Repeat to register plugin hooks "${name}".`);
 
-    this.plugins[plugin.name] = plugin;
-    const register = (obj?: P["hooks"], once?: boolean) => {
+    const register = (obj?: Record<string, unknown>, once?: boolean) => {
       if (obj) {
         for (const key in obj) {
           assert(
             this.lifecycle[key],
-            `"${key}" hook is not defined in plugin "${plugin.name}".`
+            `"${key}" hook is not defined in plugin "${name}".`
           );
           if (once) {
-            (this.lifecycle[key] as any).once(plugin.name, obj[key]);
+            (this.lifecycle[key] as any).once(name, obj[key]);
           } else {
-            (this.lifecycle[key] as any).on(plugin.name, obj[key]);
+            (this.lifecycle[key] as any).on(name, obj[key]);
           }
         }
       }
     };
+
     register(plugin.hooks, false);
     register(plugin.onceHooks, true);
-
+    this.plugins[name] = plugin;
     return plugin;
   }
 
@@ -187,7 +187,6 @@ export class PluginSystem<T extends Record<string, unknown>> {
         cloned.use(this.plugins[key]);
       }
     }
-
     return cloned;
   }
 }

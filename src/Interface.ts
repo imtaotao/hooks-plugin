@@ -1,3 +1,4 @@
+import type { SyncHook } from "./SyncHook";
 import type { createTaskId } from "./Utils";
 
 // Plugins can extend this type themselves
@@ -8,11 +9,11 @@ export interface Plugin<
   K = Record<string, unknown>
 > {
   name: string;
-  version?: string;
-  apis?: K;
-  hooks?: {
+  hooks: {
     [k in keyof T]?: Parameters<T[k]["on"]>[1];
   };
+  apis?: K;
+  version?: string;
   onceHooks?: {
     [k in keyof T]?: Parameters<T[k]["on"]>[1];
   };

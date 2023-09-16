@@ -51,6 +51,14 @@ plSys.use({
   },
 });
 
+// Register via function
+plSys.use(function(plSys) {
+  return {
+    name: "testPlugin",
+    ...
+  }
+})
+
 // Trigger hook
 plSys.lifecycle.a.emit("str", 1);
 ```
@@ -209,6 +217,7 @@ const close = plSys.debug({
   },
   // filter(data) { ... },
 });
+
 plSys.lifecycle.a.emit(1, 2);
 ```
 

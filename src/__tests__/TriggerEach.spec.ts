@@ -252,6 +252,7 @@ describe("TriggerEach", () => {
 
     plSys.use({
       name: "test",
+      hooks: {},
       onceHooks: {
         async a(data) {
           expect(data).toBe(1);
@@ -292,6 +293,7 @@ describe("TriggerEach", () => {
 
     plSys.use({
       name: "test",
+      hooks: {},
       onceHooks: {
         async a(data) {
           expect(data).toBe(1);
@@ -332,6 +334,7 @@ describe("TriggerEach", () => {
 
     plSys.use({
       name: "test",
+      hooks: {},
       onceHooks: {
         async a(data) {
           expect(data.n).toBe(1);
