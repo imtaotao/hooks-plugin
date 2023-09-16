@@ -18,6 +18,27 @@
     } = HooksPlugin;
 
     // ...
+
+    const pl = new PluginSystem({
+      a: new SyncHook()
+    })
+
+    pl.use({
+      name: '3',
+      hooks: {
+        a(d) { console.log(d); }
+      },
+    })
+
+    pl.afterEach(e => {
+      'use strict'
+      console.log(e);
+      
+      Object.defineProperty(e, 'id', { value: 232})
+      console.log(e);
+    })
+
+    pl.lifecycle.a.emit(1);
   </script>
 </body>
 </html>
