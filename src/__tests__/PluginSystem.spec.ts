@@ -220,7 +220,9 @@ describe("PluginSystem", () => {
   });
 
   it("Plugin System lock and unlock", () => {
-    const plSys = new PluginSystem({});
+    const plSys = new PluginSystem({
+      a: new SyncHook(),
+    });
     plSys.use({ name: "test", hooks: {} });
 
     plSys.lock();
@@ -228,8 +230,13 @@ describe("PluginSystem", () => {
     expect(() => {
       plSys.use({ name: "test1", hooks: {} });
     }).toThrowError();
+
     expect(() => {
       plSys.remove("test");
+    }).toThrowError();
+
+    expect(() => {
+      plSys.lifecycle.a.on(() => {});
     }).toThrowError();
 
     plSys.unlock();
@@ -237,6 +244,7 @@ describe("PluginSystem", () => {
     expect(() => {
       plSys.use({ name: "test1", hooks: {} });
     }).not.toThrowError();
+
     expect(() => {
       plSys.remove("test");
     }).not.toThrowError();

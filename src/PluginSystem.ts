@@ -16,11 +16,11 @@ export class PluginSystem<T extends Record<string, unknown>> {
   public debugCount: number;
   public plugins: Record<string, Plugin<T, PluginApis[string]>>;
 
-  constructor(lifecycle: T) {
+  constructor(lifecycle?: T) {
     this._locked = false;
     this.debugCount = 0;
     this.plugins = Object.create(null);
-    this.lifecycle = lifecycle;
+    this.lifecycle = lifecycle || Object.create(null);
   }
 
   private _addEmitLifeHook<T extends Array<unknown>, C>(
@@ -28,8 +28,8 @@ export class PluginSystem<T extends Record<string, unknown>> {
     fn: EachCallback<T, C>
   ) {
     let map = Object.create(null);
-    for (const name in this.lifecycle) {
-      map[name] = (
+    for (const key in this.lifecycle) {
+      map[key] = (
         id: TaskId,
         type: HookType,
         context: C,
@@ -40,20 +40,20 @@ export class PluginSystem<T extends Record<string, unknown>> {
         fn(
           Object.freeze({
             id,
-            name,
             type,
             args,
             context,
+            name: key,
             pluginExecTime: map,
           })
         );
       };
-      (this.lifecycle[name] as SyncHook<T, C>)[type]!.on(map[name]);
+      (this.lifecycle[key] as SyncHook<T, C>)[type]!.on(map[key]);
     }
 
     return () => {
-      for (const name in this.lifecycle) {
-        (this.lifecycle[name] as SyncHook<T, C>)[type]!.remove(map[name]);
+      for (const key in this.lifecycle) {
+        (this.lifecycle[key] as SyncHook<T, C>)[type]!.remove(map[key]);
       }
       map = Object.create(null);
     };
@@ -64,6 +64,9 @@ export class PluginSystem<T extends Record<string, unknown>> {
    */
   lock() {
     this._locked = true;
+    for (const key in this.lifecycle) {
+      (this.lifecycle[key] as any).lock();
+    }
   }
 
   /**
@@ -71,6 +74,9 @@ export class PluginSystem<T extends Record<string, unknown>> {
    */
   unlock() {
     this._locked = false;
+    for (const key in this.lifecycle) {
+      (this.lifecycle[key] as any).unlock();
+    }
   }
 
   /**

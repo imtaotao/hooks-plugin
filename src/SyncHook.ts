@@ -2,6 +2,7 @@ import { assert, INTERNAL, currentTime, createTaskId } from "./Utils";
 import type { TaskId, ArgsType, Callback, HookType } from "./Interface";
 
 export class SyncHook<T extends Array<unknown>, C = null, K = void> {
+  private _locked: boolean;
   public context: C;
   public type: HookType;
   public listeners = new Set<Callback<T, C, K>>();
@@ -14,6 +15,7 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
   // Only `context` is allowed to be passed in from outside
   constructor(context?: C, _type: HookType = "SyncHook", _internal?: Symbol) {
     this.type = _type;
+    this._locked = false;
     this.context = typeof context === "undefined" ? (null as any) : context;
 
     // `before` and `after` hooks should not call other `before` and `after` hooks recursively,
@@ -25,11 +27,33 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
   }
 
   /**
+   * By locking the current hook, you will no longer be able to add or remove callback functions from it.
+   */
+  lock() {
+    this._locked = true;
+  }
+
+  /**
+   * Unlock the current hook.
+   */
+  unlock() {
+    this._locked = false;
+  }
+
+  /**
+   * Determine whether there is an executable callback function.
+   */
+  isEmpty() {
+    return this.listeners.size === 0;
+  }
+
+  /**
    * Register a hook.
    */
   on(fn: Callback<T, C, K>): void;
   on(tag: string, fn: Callback<T, C, K>): void;
   on(tag: string | Callback<T, C, K>, fn?: Callback<T, C, K>) {
+    assert(!this._locked, "The current hook is now locked.");
     if (typeof tag === "function") {
       fn = tag;
       tag = "";
@@ -90,6 +114,7 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
    * Remove all hooks.
    */
   remove(fn: Callback<T, C, K>) {
+    assert(!this._locked, "The current hook is now locked.");
     return this.listeners.delete(fn);
   }
 
@@ -97,14 +122,8 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
    * Remove a specific hook.
    */
   removeAll() {
+    assert(!this._locked, "The current hook is now locked.");
     this.listeners.clear();
-  }
-
-  /**
-   * Determine whether there is an executable callback function.
-   */
-  isEmpty() {
-    return this.listeners.size === 0;
   }
 
   /**

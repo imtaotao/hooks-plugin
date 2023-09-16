@@ -182,4 +182,33 @@ describe("SyncHook", () => {
     });
     hook.emit(1);
   });
+
+  it("Lock and Unlock", () => {
+    let i = 0;
+    const hook = new SyncHook<[number]>();
+
+    hook.on((a) => {
+      i++;
+      expect(a).toBe(1);
+    });
+
+    hook.lock();
+
+    expect(() => {
+      hook.on((a) => {
+        i++;
+        expect(a).toBe(1);
+      });
+    }).toThrowError();
+
+    hook.unlock();
+
+    hook.on((a) => {
+      i++;
+      expect(a).toBe(1);
+    });
+
+    hook.emit(1);
+    expect(i).toBe(2);
+  });
 });
