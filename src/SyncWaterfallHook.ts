@@ -1,5 +1,11 @@
 import { SyncHook } from "./SyncHook";
-import { assert, isPlainObject, checkReturnData, createTaskId } from "./Utils";
+import {
+  assert,
+  currentTime,
+  createTaskId,
+  isPlainObject,
+  checkReturnData,
+} from "./Utils";
 
 export class SyncWaterfallHook<
   T extends Record<any, unknown>,
@@ -16,16 +22,28 @@ export class SyncWaterfallHook<
     );
     if (this.listeners.size > 0) {
       const id = createTaskId();
+      let map: Record<string, number> | null = null;
+      if (!this.after?.isEmpty()) {
+        map = Object.create(null);
+      }
       this.before?.emit(id, this.type, this.context, [data]);
+
       for (const fn of this.listeners) {
+        const tag = this.tags.get(fn);
+        if (map && tag) {
+          map[tag] = currentTime();
+        }
         const tempData = fn.call(this.context, data);
+        if (map && tag) {
+          map[tag] = currentTime() - map[tag];
+        }
         assert(
           checkReturnData(data, tempData),
           `The return value of hook "${this.type}" is incorrect.`
         );
         data = tempData;
       }
-      this.after?.emit(id, this.type, this.context, [data]);
+      this.after?.emit(id, this.type, this.context, [data], map!);
     }
     return data;
   }

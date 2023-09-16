@@ -81,4 +81,13 @@ describe("SyncWaterfallHook", () => {
 
     hook.emit(data);
   });
+
+  it("Check add tag", () => {
+    const hook = new SyncWaterfallHook<{ n: number }>();
+    hook.on("tag", (data) => {
+      expect(data).toEqual({ n: 1 });
+      return data;
+    });
+    hook.emit({ n: 1 });
+  });
 });

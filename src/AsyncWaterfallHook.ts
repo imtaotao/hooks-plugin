@@ -1,5 +1,11 @@
 import { SyncHook } from "./SyncHook";
-import { assert, isPlainObject, checkReturnData, createTaskId } from "./Utils";
+import {
+  assert,
+  currentTime,
+  createTaskId,
+  isPlainObject,
+  checkReturnData,
+} from "./Utils";
 import type { TaskId, CallbackReturnType } from "./Interface";
 
 export class AsyncWaterfallHook<
@@ -17,10 +23,14 @@ export class AsyncWaterfallHook<
     );
     let i = 0;
     let id: TaskId;
+    let map: Record<string, number> | null = null;
     const ls = Array.from(this.listeners);
 
     if (ls.length > 0) {
       id = createTaskId();
+      if (!this.after?.isEmpty()) {
+        map = Object.create(null);
+      }
       this.before?.emit(id, this.type, this.context, [data]);
 
       const call = (prevData: T | false): any => {
@@ -33,14 +43,24 @@ export class AsyncWaterfallHook<
           );
           data = prevData as T;
           if (i < ls.length) {
-            return Promise.resolve(ls[i++].call(this.context, data)).then(call);
+            const fn = ls[i++];
+            const tag = this.tags.get(fn);
+            if (map && tag) {
+              map[tag] = currentTime();
+            }
+            return Promise.resolve(fn.call(this.context, data)).then((res) => {
+              if (map && tag) {
+                map[tag] = currentTime() - map[tag];
+              }
+              return call(res);
+            });
           }
         }
         return data;
       };
 
       return Promise.resolve(call(data)).then((data) => {
-        this.after?.emit(id, this.type, this.context, [data]);
+        this.after?.emit(id, this.type, this.context, [data], map!);
         return data;
       });
     } else {

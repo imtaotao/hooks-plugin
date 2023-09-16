@@ -11,6 +11,7 @@ interface Data {
 export interface DebuggerOptions {
   tag?: string;
   group?: boolean;
+  logPluginTime?: boolean;
   filter?: string | ((e: Data) => boolean);
   receiver?: (data: Data) => void;
 }
@@ -19,16 +20,23 @@ export function createDebugger<T extends Record<string, unknown>>(
   plSys: PluginSystem<T>,
   options: DebuggerOptions
 ) {
-  let { tag, group, filter, receiver } = options;
+  let { tag, group, filter, receiver, logPluginTime } = options;
   let map: Record<TaskId, { t: number }> = Object.create(null);
+  const _tag = `[${tag || "debug"}]: `;
 
-  const _tag = tag ? `[${tag}]: ` : "";
   if (!("group" in options)) group = isBrowser;
+  if (!("logPluginTime" in options)) logPluginTime = true;
+
+  const prefix = (e: EachEvent<unknown, unknown>) => {
+    let p = `${_tag}${e.name}_${e.id}(t, args, ctx`;
+    p += logPluginTime ? ", pt)" : ")";
+    return p;
+  };
 
   const unsubscribeBefore = plSys.beforeEach((e) => {
     map[e.id] = { t: currentTime() };
     if (typeof receiver !== "function") {
-      console.time(`${_tag}${e.name}_${e.id}(t, args, ctx)`);
+      console.time(prefix(e));
       if (group) console.groupCollapsed(e.name);
     }
   });
@@ -37,10 +45,16 @@ export function createDebugger<T extends Record<string, unknown>>(
     let t: number | null = null;
 
     if (typeof filter === "string") {
-      if (e.name.startsWith(filter)) return;
+      if (e.name.startsWith(filter)) {
+        if (group) console.groupEnd();
+        return;
+      }
     } else if (typeof filter === "function") {
       t = currentTime() - map[e.id].t;
-      if (filter({ e, tag, time: t })) return;
+      if (filter({ e, tag, time: t })) {
+        if (group) console.groupEnd();
+        return;
+      }
     }
 
     if (typeof receiver === "function") {
@@ -50,9 +64,10 @@ export function createDebugger<T extends Record<string, unknown>>(
       receiver({ e, tag, time: t });
     } else {
       console.timeLog(
-        `${_tag}${e.name}_${e.id}(t, args, ctx)`,
+        prefix(e),
         e.args,
-        e.context
+        e.context,
+        logPluginTime ? e.pluginExecTime : ""
       );
       if (group) console.groupEnd();
     }

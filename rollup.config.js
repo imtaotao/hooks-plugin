@@ -15,6 +15,11 @@ const banner =
   ' */'
 
 const outputConfigs = {
+  umd: {
+    banner,
+    format: 'umd',
+    file: path.resolve(__dirname, 'dist/hooks.umd.js'),
+  },
   cjs: {
     banner,
     format: 'cjs',
@@ -24,11 +29,6 @@ const outputConfigs = {
     banner,
     format: 'es',
     file: path.resolve(__dirname, 'dist/hooks.esm-bundler.js'),
-  },
-  umd: {
-    banner,
-    format: 'umd',
-    file: path.resolve(__dirname, 'dist/hooks.umd.js'),
   },
 };
 

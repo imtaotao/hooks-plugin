@@ -109,4 +109,77 @@ describe("SyncHook", () => {
 
     hook.emit(1);
   });
+
+  it("Check isEmpyt", () => {
+    const hook1 = new SyncHook();
+    expect(hook1.isEmpty()).toBe(true);
+
+    hook1.on(() => {});
+    expect(hook1.isEmpty()).toBe(false);
+
+    // Check once
+    const hook2 = new SyncHook();
+    expect(hook2.isEmpty()).toBe(true);
+
+    hook2.once(() => {});
+    expect(hook2.isEmpty()).toBe(false);
+
+    hook2.emit();
+    expect(hook2.isEmpty()).toBe(true);
+  });
+
+  it("Check add tag", () => {
+    const hook = new SyncHook<[number]>();
+    hook.on("tag", (a) => {
+      expect(a).toBe(1);
+    });
+    hook.emit(1);
+  });
+
+  it("Check tag exist, there will be plugin execution time", () => {
+    const hook = new SyncHook<[number], string>("");
+    hook.on("tag", (a) => {
+      expect(a).toBe(1);
+    });
+
+    hook.before?.on((id, type, context, args) => {
+      expect(typeof id === "number").toBe(true);
+      expect(type === "SyncHook").toBe(true);
+      expect(context === "").toBe(true);
+      expect(args).toEqual([1]);
+    });
+
+    hook.after?.on((id, type, context, args, map) => {
+      expect(typeof id === "number").toBe(true);
+      expect(type === "SyncHook").toBe(true);
+      expect(context === "").toBe(true);
+      expect(args).toEqual([1]);
+      expect(Object.keys(map as any)).toEqual(["tag"]);
+      expect(typeof (map as any)["tag"] === "number").toBe(true);
+    });
+    hook.emit(1);
+  });
+
+  it("Check no tag, there will be no plugin execution time.", () => {
+    const hook = new SyncHook<[number], string>("");
+    hook.on((a) => {
+      expect(a).toBe(1);
+    });
+
+    hook.before?.on((id, type, context, args) => {
+      expect(typeof id === "number").toBe(true);
+      expect(type === "SyncHook").toBe(true);
+      expect(context === "").toBe(true);
+      expect(args).toEqual([1]);
+    });
+
+    hook.after?.on((id, type, context, args, map) => {
+      expect(typeof id === "number").toBe(true);
+      expect(type === "SyncHook").toBe(true);
+      expect(context === "").toBe(true);
+      expect(args).toEqual([1]);
+      expect(map).toEqual({});
+    });
+    hook.emit(1);
+  });
 });

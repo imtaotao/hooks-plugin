@@ -9,14 +9,14 @@ describe("GetOtherPlugin", () => {
     jest.spyOn(console, "groupEnd").mockImplementation(() => {});
   });
 
-  it("Check receiver and close", async () => {
+  it("Check `receiver` and `close`", async () => {
     const plSys = new PluginSystem({
       a: new SyncHook<[number, number], string>("ctxA"),
       b: new AsyncParallelHook<[string], string>("ctxB"),
     });
 
     plSys.use({
-      name: "test",
+      name: "test1",
       hooks: {
         a(a, b) {
           expect(a).toBe(1);
@@ -56,6 +56,12 @@ describe("GetOtherPlugin", () => {
         expect(typeof data.e.name === "string").toBe(true);
         expect(typeof data.e.type === "string").toBe(true);
         expect(typeof data.e.context === "string").toBe(true);
+
+        const ns = ["test1", "test2"];
+        expect(Object.keys(data.e.pluginExecTime)).toEqual(ns);
+        for (const n of ns) {
+          expect(typeof data.e.pluginExecTime[n] === "number").toBe(true);
+        }
       },
     });
 
@@ -70,7 +76,7 @@ describe("GetOtherPlugin", () => {
     expect(i).toBe(0);
   });
 
-  it("Check filter", async () => {
+  it("Check `filter`", async () => {
     const check = async (isStrFilter: boolean) => {
       const plSys = new PluginSystem({
         a: new SyncHook<[number, number], string>("ctxA"),
@@ -78,7 +84,7 @@ describe("GetOtherPlugin", () => {
       });
 
       plSys.use({
-        name: "test",
+        name: "test1",
         hooks: {
           a(a, b) {
             expect(a).toBe(1);
@@ -116,6 +122,12 @@ describe("GetOtherPlugin", () => {
               expect(typeof data.e.name === "string").toBe(true);
               expect(typeof data.e.type === "string").toBe(true);
               expect(typeof data.e.context === "string").toBe(true);
+
+              const ns = ["test1", "test2"];
+              expect(Object.keys(data.e.pluginExecTime)).toEqual(ns);
+              for (const n of ns) {
+                expect(typeof data.e.pluginExecTime[n] === "number").toBe(true);
+              }
               return data.e.name === "a"; // filter `a`
             },
 
@@ -128,6 +140,12 @@ describe("GetOtherPlugin", () => {
           expect(typeof data.e.name === "string").toBe(true);
           expect(typeof data.e.type === "string").toBe(true);
           expect(typeof data.e.context === "string").toBe(true);
+
+          const ns = ["test1", "test2"];
+          expect(Object.keys(data.e.pluginExecTime)).toEqual(ns);
+          for (const n of ns) {
+            expect(typeof data.e.pluginExecTime[n] === "number").toBe(true);
+          }
         },
       });
 
@@ -146,7 +164,7 @@ describe("GetOtherPlugin", () => {
     });
 
     plSys.use({
-      name: "test",
+      name: "test1",
       hooks: {
         a(a, b) {
           expect(a).toBe(1);
@@ -215,5 +233,70 @@ describe("GetOtherPlugin", () => {
     expect(spyTimeLog).toHaveBeenCalled();
     expect(spyGroupCollapsed).not.toHaveBeenCalled();
     expect(spyGroupEnd).not.toHaveBeenCalled();
+  });
+
+  it("Check `logPluginTime`", () => {
+    const check = (logPluginTime: boolean) => {
+      const plSys = new PluginSystem({
+        a: new SyncHook<[number]>(),
+      });
+
+      plSys.use({
+        name: "test",
+        hooks: {
+          a(data) {
+            expect(data).toBe(1);
+          },
+        },
+      });
+
+      const spyTimeLog = jest.spyOn(console, "timeLog");
+      plSys.debug({ logPluginTime });
+      plSys.lifecycle.a.emit(1);
+
+      if (logPluginTime) {
+        expect(Object.keys(spyTimeLog.mock.calls[callCount][3])).toEqual([
+          "test",
+        ]);
+      } else {
+        expect(spyTimeLog.mock.calls[callCount][3]).toBe("");
+      }
+      callCount++;
+    };
+
+    let callCount = 0;
+    check(true);
+    check(false);
+  });
+
+  it("Check `debugCount`", () => {
+    const plSys = new PluginSystem({
+      a: new SyncHook<[number]>(),
+    });
+
+    plSys.use({
+      name: "test",
+      hooks: {
+        a(data) {
+          expect(data).toBe(1);
+        },
+      },
+    });
+
+    expect(plSys.debugCount).toBe(0);
+    const close1 = plSys.debug();
+    const close2 = plSys.debug();
+    expect(plSys.debugCount).toBe(2);
+    close1();
+    expect(plSys.debugCount).toBe(1);
+    close2();
+    expect(plSys.debugCount).toBe(0);
+
+    const close3 = plSys.debug();
+    expect(plSys.debugCount).toBe(1);
+    plSys.lifecycle.a.emit(1);
+    expect(plSys.debugCount).toBe(1);
+    close3();
+    expect(plSys.debugCount).toBe(0);
   });
 });

@@ -158,4 +158,12 @@ describe("AsyncParallelHook", () => {
 
     await hook.emit(data);
   });
+
+  it("Check add tag", async () => {
+    const hook = new AsyncParallelHook<[number]>();
+    hook.on("tag", async (a) => {
+      expect(a).toEqual(1);
+    });
+    await hook.emit(1);
+  });
 });

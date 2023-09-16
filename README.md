@@ -161,6 +161,7 @@ const unsubscribeAfter = plSys.afterEach((e) => {
   console.log("type:", e.type);
   console.log("args:", e.args);
   console.log("context:", e.context);
+  console.log("pluginExecTime:", e.pluginExecTime);
 });
 
 plSys.lifecycle.a.emit(1);
@@ -194,8 +195,8 @@ plSys.use({
 });
 
 const close = plSys.debug({ tag: "tag" });
-plSys.lifecycle.a.emit(1, 2);
-// [tag]: a_1(t, args, ctx): 309.36 ms (2) [1, 2] 'ctx'
+
+plSys.lifecycle.a.emit(1, 2); // [tag]: a_1(t, args, ctx, pt): 309.36ms [1, 2] 'ctx' { test1: 308.51ms }
 
 // Close debug mode
 close();
@@ -227,7 +228,7 @@ plSys.lifecycle.a.emit(1, 2);
       SyncWaterfallHook,
       AsyncParallelHook,
       AsyncWaterfallHook,
-    } = HooksPlugin;
+    } = window.HooksPlugin;
 
     // ...
   </script>

@@ -390,9 +390,15 @@ describe("TriggerEach", () => {
       expect(e.type).toBe("SyncHook");
       expect(e.context).toBe("");
       expect(e.args).toEqual([1]);
-      expect(() => { e.id = 2; }).toThrowError();
-      expect(() => { delete (e as any).id }).toThrowError();
-      expect(() => { Object.defineProperty(e, 'id', { value: 2 }) }).toThrowError();
+      expect(() => {
+        e.id = 2;
+      }).toThrowError();
+      expect(() => {
+        delete (e as any).id;
+      }).toThrowError();
+      expect(() => {
+        Object.defineProperty(e, "id", { value: 2 });
+      }).toThrowError();
       i++;
     });
 
@@ -403,9 +409,15 @@ describe("TriggerEach", () => {
       expect(e.type).toBe("SyncHook");
       expect(e.context).toBe("");
       expect(e.args).toEqual([1]);
-      expect(() => { e.id = 2; }).toThrowError();
-      expect(() => { delete (e as any).id }).toThrowError();
-      expect(() => { Object.defineProperty(e, 'id', { value: 2 }) }).toThrowError();
+      expect(() => {
+        e.id = 2;
+      }).toThrowError();
+      expect(() => {
+        delete (e as any).id;
+      }).toThrowError();
+      expect(() => {
+        Object.defineProperty(e, "id", { value: 2 });
+      }).toThrowError();
       i++;
     });
 

@@ -104,4 +104,12 @@ describe("AsyncHook", () => {
 
     await hook.emit(1);
   });
+
+  it("Check add tag", async () => {
+    const hook = new AsyncHook<[number]>();
+    hook.on("tag", async (a) => {
+      expect(a).toEqual(1);
+    });
+    await hook.emit(1);
+  });
 });

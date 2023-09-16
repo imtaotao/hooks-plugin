@@ -11,12 +11,15 @@ import type {
 
 export class PluginSystem<T extends Record<string, unknown>> {
   private _locked: boolean;
+
   public lifecycle: T;
   public v = __VERSION__;
+  public debugCount: number;
   public plugins: Record<string, Plugin<T, PluginApis[string]>>;
 
   constructor(lifecycle: T) {
     this._locked = false;
+    this.debugCount = 0;
     this.plugins = Object.create(null);
     this.lifecycle = lifecycle;
   }
@@ -27,9 +30,24 @@ export class PluginSystem<T extends Record<string, unknown>> {
   ) {
     let map = Object.create(null);
     for (const name in this.lifecycle) {
-      map[name] = (id: TaskId, type: HookType, context: C, args: T) => {
+      map[name] = (
+        id: TaskId,
+        type: HookType,
+        context: C,
+        args: T,
+        map: Record<string, number>
+      ) => {
         // Disallow deleting `id` as it may cause confusion.
-        fn(Object.freeze({ id, name, type, args, context }));
+        fn(
+          Object.freeze({
+            id,
+            name,
+            type,
+            args,
+            context,
+            pluginExecTime: map,
+          })
+        );
       };
       (this.lifecycle[name] as SyncHook<T, C>)[type]!.on(map[name]);
     }
@@ -85,8 +103,13 @@ export class PluginSystem<T extends Record<string, unknown>> {
   /**
    * Enable debug mode.
    */
-  debug(options: DebuggerOptions = {}): ReturnType<typeof createDebugger> {
-    return createDebugger(this, options);
+  debug(options: DebuggerOptions = {}) {
+    this.debugCount++;
+    const close = createDebugger(this, options);
+    return () => {
+      this.debugCount--;
+      close();
+    };
   }
 
   /**
@@ -113,9 +136,9 @@ export class PluginSystem<T extends Record<string, unknown>> {
             `"${key}" hook is not defined in plugin "${plugin.name}".`
           );
           if (once) {
-            (this.lifecycle[key] as any).once(obj[key]);
+            (this.lifecycle[key] as any).once(plugin.name, obj[key]);
           } else {
-            (this.lifecycle[key] as any).on(obj[key]);
+            (this.lifecycle[key] as any).on(plugin.name, obj[key]);
           }
         }
       }

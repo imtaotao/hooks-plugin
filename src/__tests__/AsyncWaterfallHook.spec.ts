@@ -110,4 +110,13 @@ describe("AsyncWaterfallHook", () => {
 
     await hook.emit(data);
   });
+
+  it("Check add tag", async () => {
+    const hook = new AsyncWaterfallHook<{ n: number }>();
+    hook.on("tag", async (data) => {
+      expect(data).toEqual({ n: 1 });
+      return data;
+    });
+    await hook.emit({ n: 1 });
+  });
 });

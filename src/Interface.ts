@@ -11,10 +11,10 @@ export interface Plugin<
   version?: string;
   apis?: K;
   hooks?: {
-    [k in keyof T]?: Parameters<T[k]["on"]>[0];
+    [k in keyof T]?: Parameters<T[k]["on"]>[1];
   };
   onceHooks?: {
-    [k in keyof T]?: Parameters<T[k]["on"]>[0];
+    [k in keyof T]?: Parameters<T[k]["on"]>[1];
   };
 }
 
@@ -24,6 +24,7 @@ export interface EachEvent<T, C> {
   context: C;
   name: string;
   type: HookType;
+  pluginExecTime: Record<string, number>;
 }
 
 export type TaskId = ReturnType<typeof createTaskId>;
