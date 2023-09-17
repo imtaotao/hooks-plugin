@@ -1,12 +1,24 @@
 const objectToString = Object.prototype.toString;
 
-export const INTERNAL = Symbol("hooksPlugin");
+export const INTERNAL = Symbol("internal_hooks");
+export const INVALID_VALUE = Symbol("invalid_condition_value");
+export const PERFORMACE_PLUGIN_PREFIX = "__performace_monitor__";
 
 export const isBrowser = typeof window !== "undefined";
 
-let id = 1;
+let taskId = 1;
 export function createTaskId() {
-  return id++;
+  return taskId++;
+}
+
+let monitorTaskId = 1;
+export function createMonitorTaskId() {
+  return monitorTaskId++;
+}
+
+let monitorPluginId = 1;
+export function createMonitorPluginId() {
+  return monitorPluginId++;
 }
 
 export function currentTime() {
@@ -32,6 +44,20 @@ export function checkReturnData(
     }
   }
   return true;
+}
+
+export function getTargetInArgs(key: string, args: Array<unknown>) {
+  const parts = key.split(".");
+  (parts as any)[0] = Number(parts[0]);
+  if (parts.length === 1) {
+    return args[parts[0] as unknown as number];
+  }
+  let target: unknown = args;
+  for (let i = 0, l = parts.length; i < l; i++) {
+    if (!target) return INVALID_VALUE;
+    target = (target as any)[parts[i]];
+  }
+  return target;
 }
 
 export const PREFIX = "[hooksPlugin]";

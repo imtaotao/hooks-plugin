@@ -28,6 +28,13 @@ export interface EachEvent<T, C> {
   pluginExecTime: Record<string, number>;
 }
 
+export interface PerformaceEvent {
+  time: number;
+  endContext: unknown;
+  endArgs: Array<unknown>;
+  events: [string, string];
+}
+
 export type TaskId = ReturnType<typeof createTaskId>;
 export type EachCallback<T, C> = (e: EachEvent<T, C>) => void;
 export type ArgsType<T> = T extends Array<any> ? T : Array<unknown>;

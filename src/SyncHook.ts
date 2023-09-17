@@ -27,10 +27,20 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
   }
 
   /**
+   * Determine whether there is an executable callback function.
+   */
+  isEmpty() {
+    return this.listeners.size === 0;
+  }
+
+  /**
    * By locking the current hook, you will no longer be able to add or remove callback functions from it.
    */
   lock() {
     this._locked = true;
+    if (this.before) this.before.lock();
+    if (this.after) this.after.lock();
+    return this;
   }
 
   /**
@@ -38,13 +48,9 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
    */
   unlock() {
     this._locked = false;
-  }
-
-  /**
-   * Determine whether there is an executable callback function.
-   */
-  isEmpty() {
-    return this.listeners.size === 0;
+    if (this.before) this.before.unlock();
+    if (this.after) this.after.unlock();
+    return this;
   }
 
   /**
@@ -63,6 +69,7 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
       this.tags.set(fn as Callback<T, C, K>, tag);
     }
     this.listeners.add(fn as Callback<T, C, K>);
+    return this;
   }
 
   /**
@@ -80,6 +87,7 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
       self.remove(wrapper);
       return (fn as Callback<T, C, K>).apply(this, args as any);
     });
+    return this;
   }
 
   /**
@@ -115,7 +123,8 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
    */
   remove(fn: Callback<T, C, K>) {
     assert(!this._locked, "The current hook is now locked.");
-    return this.listeners.delete(fn);
+    this.listeners.delete(fn);
+    return this;
   }
 
   /**
@@ -124,6 +133,7 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
   removeAll() {
     assert(!this._locked, "The current hook is now locked.");
     this.listeners.clear();
+    return this;
   }
 
   /**

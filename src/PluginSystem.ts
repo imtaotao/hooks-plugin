@@ -1,6 +1,7 @@
-import { assert, isPlainObject } from "./Utils";
 import type { SyncHook } from "./SyncHook";
+import { createPerformace } from "./Performace";
 import { type DebuggerOptions, createDebugger } from "./Debugger";
+import { assert, isPlainObject, PERFORMACE_PLUGIN_PREFIX } from "./Utils";
 import type {
   TaskId,
   HookType,
@@ -23,11 +24,16 @@ export class PluginSystem<T extends Record<string, unknown>> {
     this.lifecycle = lifecycle || Object.create(null);
   }
 
-  private _addEmitLifeHook<T extends Array<unknown>, C>(
+  private _onEmitLifeHook<T extends Array<unknown>, C>(
     type: "before" | "after",
     fn: EachCallback<T, C>
   ) {
+    assert(
+      !this._locked,
+      `The plugin system is locked and cannot add "${type}" hook.`
+    );
     let map = Object.create(null);
+
     for (const key in this.lifecycle) {
       map[key] = (
         id: TaskId,
@@ -85,7 +91,7 @@ export class PluginSystem<T extends Record<string, unknown>> {
   beforeEach<T extends Array<unknown>, C extends unknown>(
     fn: EachCallback<T, C>
   ) {
-    return this._addEmitLifeHook<T, C>("before", fn);
+    return this._onEmitLifeHook<T, C>("before", fn);
   }
 
   /**
@@ -94,7 +100,30 @@ export class PluginSystem<T extends Record<string, unknown>> {
   afterEach<T extends Array<unknown>, C extends unknown>(
     fn: EachCallback<T, C>
   ) {
-    return this._addEmitLifeHook<T, C>("after", fn);
+    return this._onEmitLifeHook<T, C>("after", fn);
+  }
+
+  /**
+   * Monitor elapsed time between hooks.
+   */
+  performance(condition: string): ReturnType<typeof createPerformace> {
+    assert(
+      condition && typeof condition === "string",
+      "A judgment `condition` is required to use `performance`."
+    );
+    return createPerformace(this, condition);
+  }
+
+  /**
+   * Enable debug mode.
+   */
+  debug(options: DebuggerOptions = {}) {
+    const close = createDebugger(this, options);
+    this.debugCount++;
+    return () => {
+      close();
+      this.debugCount--;
+    };
   }
 
   /**
@@ -103,18 +132,6 @@ export class PluginSystem<T extends Record<string, unknown>> {
   getPluginApis<N extends keyof PluginApis>(pluginName: N) {
     return this.plugins[pluginName as string]
       .apis as PluginApis[typeof pluginName];
-  }
-
-  /**
-   * Enable debug mode.
-   */
-  debug(options: DebuggerOptions = {}) {
-    this.debugCount++;
-    const close = createDebugger(this, options);
-    return () => {
-      this.debugCount--;
-      close();
-    };
   }
 
   /**
@@ -140,10 +157,12 @@ export class PluginSystem<T extends Record<string, unknown>> {
             this.lifecycle[key],
             `"${key}" hook is not defined in plugin "${name}".`
           );
+          // The loss of built-in plugins for performance statistics is negligible
+          const tag = name.startsWith(PERFORMACE_PLUGIN_PREFIX) ? "" : name;
           if (once) {
-            (this.lifecycle[key] as any).once(name, obj[key]);
+            (this.lifecycle[key] as any).once(tag, obj[key]);
           } else {
-            (this.lifecycle[key] as any).on(name, obj[key]);
+            (this.lifecycle[key] as any).on(tag, obj[key]);
           }
         }
       }

@@ -225,6 +225,9 @@ describe("PluginSystem", () => {
     });
     plSys.use({ name: "test", hooks: {} });
 
+    const close = plSys.debug();
+    const monitor = plSys.performance("0");
+
     plSys.lock();
 
     expect(() => {
@@ -233,6 +236,30 @@ describe("PluginSystem", () => {
 
     expect(() => {
       plSys.remove("test");
+    }).toThrowError();
+
+    expect(() => {
+      plSys.beforeEach(() => {});
+    }).toThrowError();
+
+    expect(() => {
+      plSys.afterEach(() => {});
+    }).toThrowError();
+
+    expect(() => {
+      plSys.debug();
+    }).toThrowError();
+
+    expect(() => {
+      close();
+    }).toThrowError();
+
+    expect(() => {
+      plSys.performance("0");
+    }).toThrowError();
+
+    expect(() => {
+      monitor.close();
     }).toThrowError();
 
     expect(() => {
@@ -247,6 +274,14 @@ describe("PluginSystem", () => {
 
     expect(() => {
       plSys.remove("test");
+    }).not.toThrowError();
+
+    expect(() => {
+      close();
+    }).not.toThrowError();
+
+    expect(() => {
+      monitor.close();
     }).not.toThrowError();
   });
 

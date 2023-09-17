@@ -222,6 +222,30 @@ plSys.lifecycle.a.emit(1, 2);
 ```
 
 
+### Performaace
+
+```ts
+import { SyncHook, PluginSystem } from "hooks-plugin";
+
+const pl = new PluginSystem({
+  a: new SyncHook(),
+  b: new AsyncHook(),
+});
+
+// Take the `name` prop from the `0` parameter for matching
+const p = pl.performance("0.name");
+p.monitor("a", "a").on((e) => console.log(e.time)); // 200.400
+p.monitor("a", "b").on((e) => console.log(e.time)); // 0.199
+
+pl.lifecycle.a.emit({ name: "n" });
+
+setTimeout(() => {
+  pl.lifecycle.a.emit({ name: "n" });
+  pl.lifecycle.b.emit({ name: "n" });
+}, 200);
+```
+
+
 ## CDN
 
 ```html

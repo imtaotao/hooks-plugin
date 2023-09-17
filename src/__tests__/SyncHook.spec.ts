@@ -195,10 +195,17 @@ describe("SyncHook", () => {
     hook.lock();
 
     expect(() => {
-      hook.on((a) => {
+      hook.on(() => {
         i++;
-        expect(a).toBe(1);
       });
+    }).toThrowError();
+
+    expect(() => {
+      hook.after?.on(() => {});
+    }).toThrowError();
+
+    expect(() => {
+      hook.before?.on(() => {});
     }).toThrowError();
 
     hook.unlock();
@@ -207,6 +214,9 @@ describe("SyncHook", () => {
       i++;
       expect(a).toBe(1);
     });
+
+    hook.after?.on(() => {});
+    hook.before?.on(() => {});
 
     hook.emit(1);
     expect(i).toBe(2);
