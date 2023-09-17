@@ -1,8 +1,14 @@
-import { SyncHook, AsyncParallelHook, PluginSystem } from "../../index";
+import {
+  SyncHook,
+  AsyncHook,
+  AsyncParallelHook,
+  PluginSystem,
+} from "../../index";
 
 describe("GetOtherPlugin", () => {
   beforeEach(() => {
     // Avoid unnecessary log messages
+    jest.spyOn(console, "log").mockImplementation(() => {});
     jest.spyOn(console, "time").mockImplementation(() => {});
     jest.spyOn(console, "timeLog").mockImplementation(() => {});
     jest.spyOn(console, "groupCollapsed").mockImplementation(() => {});
@@ -267,6 +273,54 @@ describe("GetOtherPlugin", () => {
     let callCount = 0;
     check(true);
     check(false);
+  });
+
+  it("Link performace", async () => {
+    const plSys = new PluginSystem({
+      a: new SyncHook<[{ name: string }]>(),
+      b: new AsyncHook<[{ name: string }]>(),
+    });
+
+    let i = 0;
+    const p = plSys.performance("0.name");
+    plSys.debug({
+      tag: "tag",
+      performance: p,
+      performanceReceiver(data) {
+        i++;
+        expect(data.tag).toBe("tag");
+        expect(typeof data.e.time).toBe("number");
+        expect(data.e.events.length).toBe(2);
+        expect(data.e.equeValue).toBe("n");
+        expect(data.e.endArgs).toEqual([{ name: "n" }]);
+      },
+    });
+
+    p.monitor("a", "a");
+    p.monitor("a", "b");
+
+    plSys.lifecycle.a.emit({ name: "n" });
+    plSys.lifecycle.a.emit({ name: "n" });
+    await plSys.lifecycle.b.emit({ name: "n" });
+    expect(i).toBe(2);
+  });
+
+  it("Link performace (auto call log)", async () => {
+    const plSys = new PluginSystem({
+      a: new SyncHook<[{ name: string }]>(),
+      b: new AsyncHook<[{ name: string }]>(),
+    });
+
+    const spyLog = jest.spyOn(console, "log");
+    const p = plSys.performance("0.name");
+    plSys.debug({ performance: p });
+
+    p.monitor("a", "b");
+
+    plSys.lifecycle.a.emit({ name: "n" });
+    await plSys.lifecycle.b.emit({ name: "n" });
+    expect(spyLog).toHaveBeenCalled();
+    spyLog.mockRestore();
   });
 
   it("Check `debugCount`", () => {
