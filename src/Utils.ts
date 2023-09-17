@@ -1,3 +1,5 @@
+import type { BaseType } from "./Interface";
+
 const objectToString = Object.prototype.toString;
 
 export const INTERNAL = Symbol("internal_hooks");
@@ -29,6 +31,19 @@ export function currentTime() {
 
 export function isPlainObject(val: unknown): val is Object {
   return objectToString.call(val) === "[object Object]";
+}
+
+export function isNativeValue(val: unknown): val is BaseType {
+  const type = typeof val;
+  return (
+    type === "number" ||
+    type === "bigint" ||
+    type === "string" ||
+    type === "symbol" ||
+    type === "boolean" ||
+    val == undefined ||
+    val === null
+  );
 }
 
 export function checkReturnData(

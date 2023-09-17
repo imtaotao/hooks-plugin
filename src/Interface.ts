@@ -30,6 +30,7 @@ export interface EachEvent<T, C> {
 
 export interface PerformaceEvent {
   time: number;
+  equeValue: unknown;
   endContext: unknown;
   endArgs: Array<unknown>;
   events: [string, string];
@@ -46,3 +47,12 @@ export type HookType =
   | "AsyncHook"
   | "AsyncParallelHook"
   | "AsyncWaterfallHook";
+
+export type BaseType =
+  | number
+  | bigint
+  | string
+  | symbol
+  | boolean
+  | null
+  | undefined;

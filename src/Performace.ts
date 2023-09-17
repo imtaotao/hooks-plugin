@@ -4,6 +4,7 @@ import type { PerformaceEvent } from "./Interface";
 import {
   currentTime,
   INVALID_VALUE,
+  isNativeValue,
   getTargetInArgs,
   createMonitorTaskId,
   createMonitorPluginId,
@@ -17,11 +18,13 @@ export function createPerformace<T extends Record<string, unknown>>(
   let hooks = {};
   const pluginName = `${PERFORMACE_PLUGIN_PREFIX}${createMonitorPluginId()}`;
 
-  // The `value` is recorded here,
-  // but the value is unknown and there may be a memory leak.
-  // The user needs to manually close the performance monitoring to clear it.
-  let records: Record<string, { value: unknown; t: number }> =
-    Object.create(null);
+  // If value is equivalent, it represents an event bus
+  // Note (need to guide users):
+  //  The `value` is recorded here,
+  //  but the value is unknown and there may be a memory leak.
+  //  The user needs to manually close the performance monitoring to clear it.
+  let records1 = new Map<any, Record<string, number>>();
+  let records2: Record<any, Record<string, number>> = Object.create(null);
 
   // Some information about each time a monitor is created is recorded here.
   let monitorTask: Record<
@@ -38,15 +41,23 @@ export function createPerformace<T extends Record<string, unknown>>(
 
         if (key === ek) {
           value = getTargetInArgs(condition, args);
+
           if (value !== INVALID_VALUE) {
-            const prev = records[`${id}_${sk}`];
-            if (prev && value === prev.value) {
-              hook.emit({
-                endArgs: args,
-                endContext: this,
-                events: [sk, ek],
-                time: currentTime() - prev.t,
-              });
+            const prevObj = isNativeValue(value)
+              ? records2[value as any]
+              : records1.get(value as any);
+
+            if (prevObj) {
+              const prevTime = prevObj[`${id}_${sk}`];
+              if (typeof prevTime === "number") {
+                hook.emit({
+                  endArgs: args,
+                  endContext: this,
+                  events: [sk, ek],
+                  equeValue: value,
+                  time: currentTime() - prevTime,
+                });
+              }
             }
           }
         }
@@ -54,10 +65,24 @@ export function createPerformace<T extends Record<string, unknown>>(
         if (key === sk) {
           value = value || getTargetInArgs(condition, args);
           if (value !== INVALID_VALUE) {
-            records[`${id}_${sk}`] = {
-              value,
-              t: currentTime(),
-            };
+            let obj;
+            const k = `${id}_${sk}`;
+            const t = currentTime();
+
+            if (isNativeValue(value)) {
+              obj = records2[value as any];
+              if (!obj) {
+                obj = Object.create(null);
+                records2[value as any] = obj;
+              }
+            } else {
+              obj = records1.get(value);
+              if (!obj) {
+                obj = Object.create(null);
+                records1.set(value, obj);
+              }
+            }
+            obj[k] = t;
           }
         }
       }
@@ -73,7 +98,8 @@ export function createPerformace<T extends Record<string, unknown>>(
   return {
     close() {
       plSys.remove(pluginName);
-      records = Object.create(null);
+      records1.clear();
+      records2 = Object.create(null);
       monitorTask = Object.create(null);
       this.taskHooks.hs.clear();
       this.taskHooks.hs.forEach((hook) => {
