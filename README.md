@@ -26,6 +26,8 @@ Plugin system built through various hooks, inspired by [tapable](https://github.
 - `plSys.lock`
 - `plSys.unlock`
 - `plSys.clone`
+- `plSys.debug`
+- `plSys.performance`
 - `plSys.getPluginApis`
 
 
