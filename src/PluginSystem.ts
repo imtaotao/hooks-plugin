@@ -106,12 +106,15 @@ export class PluginSystem<T extends Record<string, unknown>> {
   /**
    * Monitor elapsed time between hooks.
    */
-  performance(condition: string): ReturnType<typeof createPerformace> {
+  performance(
+    defaultCondition: string,
+    conditions?: Partial<Record<keyof T, string>>
+  ): ReturnType<typeof createPerformace> {
     assert(
-      condition && typeof condition === "string",
-      "A judgment `condition` is required to use `performance`."
+      defaultCondition && typeof defaultCondition === "string",
+      "A judgment `conditions` is required to use `performance`."
     );
-    return createPerformace(this, condition);
+    return createPerformace(this, defaultCondition, conditions);
   }
 
   /**

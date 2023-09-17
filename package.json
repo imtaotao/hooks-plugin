@@ -1,6 +1,6 @@
 {
   "name": "hooks-plugin",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A plugin system built through various hooks.",
   "main": "./dist/hooks.cjs.js",
   "unpkg": "./dist/hooks.umd.js",

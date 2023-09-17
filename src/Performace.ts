@@ -13,7 +13,8 @@ import {
 
 export function createPerformace<T extends Record<string, unknown>>(
   plSys: PluginSystem<T>,
-  condition: string
+  defaultCondition: string,
+  conditions?: Partial<Record<string, string>>
 ) {
   let hooks = {};
   const pluginName = `${PERFORMACE_PLUGIN_PREFIX}${createMonitorPluginId()}`;
@@ -32,16 +33,21 @@ export function createPerformace<T extends Record<string, unknown>>(
     [string, string, SyncHook<[PerformaceEvent]>]
   > = Object.create(null);
 
+  const findConditio = (key: string) => {
+    if (!conditions) return defaultCondition;
+    return conditions[key] || defaultCondition;
+  };
+
   for (const key in plSys.lifecycle) {
     (hooks as any)[key] = function (...args: Array<unknown>) {
       let value: unknown;
+      const condition = findConditio(key);
 
       for (const id in monitorTask) {
         const [sk, ek, hook] = monitorTask[id];
 
         if (key === ek) {
           value = getTargetInArgs(condition, args);
-
           if (value !== INVALID_VALUE) {
             const prevObj = isNativeValue(value)
               ? records2[value as any]
@@ -64,6 +70,7 @@ export function createPerformace<T extends Record<string, unknown>>(
 
         if (key === sk) {
           value = value || getTargetInArgs(condition, args);
+
           if (value !== INVALID_VALUE) {
             let obj;
             const k = `${id}_${sk}`;

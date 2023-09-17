@@ -26,10 +26,9 @@
 
     pl.use({ name: 'test' })
 
-    const p = pl.performance('0.name');
+    const p = pl.performance('0.name', { b: '0.name1' });
     p.monitor('a', 'a').on((e) => console.log(e) ) // 200.400
     p.monitor('a', 'b').on((e) => console.log(e) ) // 0.199
-
 
     pl.lifecycle.a.emit({ name: 'n1' });
 
@@ -40,7 +39,7 @@
     setTimeout(() => {
       pl.lifecycle.a.emit({ name: 'n' });
       pl.lifecycle.b.emit({ name: 'n1' });
-      pl.lifecycle.b.emit({ name: 'n' });
+      pl.lifecycle.b.emit({ name1: 'n' });
     }, 200)
   </script>
 </body>
