@@ -208,4 +208,21 @@ describe("Performance", () => {
     await check();
     await check({});
   });
+
+  it("Check 0 args", () => {
+    let i = 0;
+    const plSys = new PluginSystem({
+      a: new SyncHook<[string]>(),
+      b: new AsyncHook<[string]>(),
+    });
+    const p = plSys.performance("0");
+
+    p.monitor("a", "b").on(() => {
+      i++;
+    });
+
+    plSys.lifecycle.a.emit("str");
+    plSys.lifecycle.b.emit("str");
+    expect(i).toBe(1);
+  });
 });

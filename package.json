@@ -1,15 +1,16 @@
 {
   "name": "hooks-plugin",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "description": "A plugin system built through various hooks.",
   "main": "./dist/hooks.cjs.js",
   "unpkg": "./dist/hooks.umd.js",
   "module": "./dist/hooks.esm-bundler.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "test": "jest",
     "dev": "http-server ./ --cors -c-1",
     "build": "rm -rf dist && rollup --config",
+    "test": "jest",
+    "test:cov": "jest --coverage",
     "format": "prettier --write --parser typescript \"(src|dist)/**/*.(js|ts?(x))\""
   },
   "files": [

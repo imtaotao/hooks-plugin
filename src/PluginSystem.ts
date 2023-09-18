@@ -23,7 +23,6 @@ export class PluginSystem<T extends Record<string, unknown>> {
     this._debugs = new Set();
     this._performances = new Set();
     this.plugins = Object.create(null);
-
     this.lifecycle = lifecycle || Object.create(null);
   }
 
@@ -133,7 +132,7 @@ export class PluginSystem<T extends Record<string, unknown>> {
   }
 
   /**
-   * Remove all debug instances
+   * Remove all debug instances.
    */
   debug(options: DebuggerOptions = {}) {
     const close = createDebugger(this, options);
@@ -158,7 +157,7 @@ export class PluginSystem<T extends Record<string, unknown>> {
   }
 
   /**
-   * Register plugin
+   * Register plugin.
    */
   use<P extends Plugin<T>>(plugin: P): P;
   use<F extends (plSys: this) => Plugin<T>>(plugin: F): ReturnType<F>;
@@ -198,7 +197,7 @@ export class PluginSystem<T extends Record<string, unknown>> {
   }
 
   /**
-   * Remove plugin
+   * Remove plugin.
    */
   remove(pluginName: string) {
     assert(
@@ -222,7 +221,7 @@ export class PluginSystem<T extends Record<string, unknown>> {
   }
 
   /**
-   * Clone a brand new pluginSystem instance
+   * Clone a brand new pluginSystem instance.
    */
   clone(usePlugin?: boolean) {
     const newLifecycle = {};

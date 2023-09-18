@@ -112,6 +112,9 @@ export function createPerformance<T extends Record<string, unknown>>(
   });
 
   return {
+    /**
+     * Turn off performance monitoring.
+     */
     close() {
       if (!closed) {
         closed = true;
@@ -125,7 +128,7 @@ export function createPerformance<T extends Record<string, unknown>>(
     },
 
     /**
-     * Add new observation task
+     * Add new observation task.
      */
     monitor(
       sk: keyof T,

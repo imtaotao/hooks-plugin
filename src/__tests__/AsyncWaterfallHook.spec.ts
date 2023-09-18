@@ -34,9 +34,19 @@ describe("AsyncWaterfallHook", () => {
 
     hook.removeAll();
 
+    // Return data in the same format
+    hook.on(() => {
+      return { name: "test" };
+    });
+
+    data = await hook.emit({ name: "chen" });
+    expect(data).toEqual({ name: "test" });
+
+    hook.removeAll();
+
     // @ts-ignore
     hook.on(async () => {
-      return "";
+      return {};
     });
     hook.on(async (data) => {
       data.name += "2";

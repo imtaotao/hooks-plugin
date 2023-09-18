@@ -287,7 +287,7 @@ describe("GetOtherPlugin", () => {
 
     let i = 0;
     const p = plSys.performance("0.name");
-    plSys.debug({
+    const close = plSys.debug({
       tag: "tag",
       performance: p,
       performanceReceiver(data) {
@@ -307,6 +307,10 @@ describe("GetOtherPlugin", () => {
     plSys.lifecycle.a.emit({ name: "n" });
     await plSys.lifecycle.b.emit({ name: "n" });
     expect(i).toBe(2);
+
+    const spy = jest.spyOn(p, "close");
+    close();
+    expect(spy).toHaveBeenCalled();
   });
 
   it("Link performance (auto call log)", async () => {

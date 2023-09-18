@@ -2,6 +2,7 @@ import type { BaseType } from "./Interface";
 
 const objectToString = Object.prototype.toString;
 
+const PREFIX = "[hooksPlugin]";
 export const INTERNAL = Symbol("internal_hooks");
 export const INVALID_VALUE = Symbol("invalid_condition_value");
 export const PERFORMANCE_PLUGIN_PREFIX = "__performance_monitor__";
@@ -45,6 +46,12 @@ export function isNativeValue(val: unknown): val is BaseType {
   );
 }
 
+export function assert(condition: unknown, error?: string) {
+  if (!condition) {
+    throw `${PREFIX}: ${error}`;
+  }
+}
+
 export function checkReturnData(
   originData: Record<string, unknown>,
   returnData: Record<string, unknown>
@@ -72,22 +79,4 @@ export function getTargetInArgs(key: string, args: Array<unknown>) {
     target = (target as any)[parts[i]];
   }
   return target;
-}
-
-export const PREFIX = "[hooksPlugin]";
-export function assert(condition: unknown, error?: string | Error) {
-  if (!condition) {
-    try {
-      if (typeof error === "string") {
-        error = `${PREFIX}: ${error}`;
-      } else if (error instanceof Error) {
-        if (!error.message.startsWith(PREFIX)) {
-          error.message = `${PREFIX}: ${error.message}`;
-        }
-      }
-    } catch (e) {
-      // don't do anything
-    }
-    throw error;
-  }
 }
