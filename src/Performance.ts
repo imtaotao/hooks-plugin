@@ -2,6 +2,7 @@ import { SyncHook } from "./SyncHook";
 import type { PluginSystem } from "./PluginSystem";
 import type { PerformanceEvent } from "./Interface";
 import {
+  assert,
   currentTime,
   INVALID_VALUE,
   isNativeValue,
@@ -16,6 +17,7 @@ export function createPerformance<T extends Record<string, unknown>>(
   defaultCondition: string
 ) {
   let hooks = {};
+  let closed = false;
   const pluginName = `${PERFORMANCE_PLUGIN_PREFIX}${createMonitorPluginId()}`;
 
   // If value is equivalent, it represents an event bus
@@ -111,30 +113,35 @@ export function createPerformance<T extends Record<string, unknown>>(
 
   return {
     close() {
-      plSys.remove(pluginName);
-      records1.clear();
-      records2 = Object.create(null);
-      monitorTask = Object.create(null);
-      this.taskHooks.hs.clear();
-      this.taskHooks.hs.forEach((hook) => {
-        hook.removeAll();
-      });
+      if (!closed) {
+        closed = true;
+        records1.clear();
+        records2 = Object.create(null);
+        monitorTask = Object.create(null);
+        this._taskHooks.hs.forEach((hook) => hook.removeAll());
+        this._taskHooks.hs.clear();
+        plSys.remove(pluginName);
+      }
     },
 
+    /**
+     * Add new observation task
+     */
     monitor(
       sk: keyof T,
       ek: keyof T,
       conditions?: Partial<Record<string, string>>
     ) {
+      assert(!closed, "Unable to add tasks to a closed performance observer.");
       const id = createMonitorTaskId();
       const hook = new SyncHook<[PerformanceEvent]>();
       const task = [sk, ek, conditions, hook];
       monitorTask[id] = task as any;
-      this.taskHooks.add(hook);
+      this._taskHooks.add(hook);
       return hook;
     },
 
-    taskHooks: {
+    _taskHooks: {
       hs: new Set<SyncHook<[PerformanceEvent]>>(),
       watch: new Set<(hook: SyncHook<[PerformanceEvent]>) => void>(),
 

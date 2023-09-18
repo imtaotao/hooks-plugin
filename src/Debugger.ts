@@ -42,8 +42,8 @@ function logPerformance(
       );
     }
   };
-  p.taskHooks.watch.add((hook) => hook.on(fn));
-  p.taskHooks.hs.forEach((hook) => hook.on(fn));
+  p._taskHooks.watch.add((hook) => hook.on(fn));
+  p._taskHooks.hs.forEach((hook) => hook.on(fn));
 }
 
 export function createDebugger<T extends Record<string, unknown>>(

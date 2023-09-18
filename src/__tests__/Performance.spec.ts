@@ -112,6 +112,10 @@ describe("Performance", () => {
 
     p.close();
 
+    expect(() => {
+      p.monitor("a", "a").on(() => {});
+    }).toThrowError();
+
     plSys.lifecycle.a.emit();
 
     const p1 = timeout(() => {
@@ -146,6 +150,10 @@ describe("Performance", () => {
     });
 
     plSys.removePerformances();
+
+    expect(() => {
+      p.monitor("a", "a").on(() => {});
+    }).toThrowError();
 
     plSys.lifecycle.a.emit();
 
