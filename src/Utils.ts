@@ -34,14 +34,13 @@ export function isPlainObject(val: unknown): val is Object {
 }
 
 export function isNativeValue(val: unknown): val is BaseType {
-  const type = typeof val;
   return (
-    type === "number" ||
-    type === "bigint" ||
-    type === "string" ||
-    type === "symbol" ||
-    type === "boolean" ||
-    val == undefined ||
+    typeof val === "number" ||
+    typeof val === "bigint" ||
+    typeof val === "string" ||
+    typeof val === "symbol" ||
+    typeof val === "boolean" ||
+    val === undefined ||
     val === null
   );
 }
