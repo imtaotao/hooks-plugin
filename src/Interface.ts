@@ -1,4 +1,3 @@
-import type { SyncHook } from "./SyncHook";
 import type { createTaskId } from "./Utils";
 
 // Plugins can extend this type themselves
