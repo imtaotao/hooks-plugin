@@ -1,7 +1,7 @@
 import type { SyncHook } from "./SyncHook";
-import { createPerformace } from "./Performace";
+import { createPerformance } from "./Performance";
 import { type DebuggerOptions, createDebugger } from "./Debugger";
-import { assert, isPlainObject, PERFORMACE_PLUGIN_PREFIX } from "./Utils";
+import { assert, isPlainObject, PERFORMANCE_PLUGIN_PREFIX } from "./Utils";
 import type {
   TaskId,
   HookType,
@@ -12,15 +12,18 @@ import type {
 
 export class PluginSystem<T extends Record<string, unknown>> {
   private _locked: boolean;
+  private _debugs: Set<() => void>;
+  private _performances: Set<() => void>;
   public lifecycle: T;
   public v = __VERSION__;
-  public debugCount: number;
   public plugins: Record<string, Plugin<T, PluginApis[string]>>;
 
   constructor(lifecycle?: T) {
     this._locked = false;
-    this.debugCount = 0;
+    this._debugs = new Set();
+    this._performances = new Set();
     this.plugins = Object.create(null);
+
     this.lifecycle = lifecycle || Object.create(null);
   }
 
@@ -106,27 +109,44 @@ export class PluginSystem<T extends Record<string, unknown>> {
   /**
    * Monitor elapsed time between hooks.
    */
-  performance(
-    defaultCondition: string,
-    conditions?: Partial<Record<keyof T, string>>
-  ): ReturnType<typeof createPerformace> {
+  performance(defaultCondition: string): ReturnType<typeof createPerformance> {
     assert(
       defaultCondition && typeof defaultCondition === "string",
       "A judgment `conditions` is required to use `performance`."
     );
-    return createPerformace(this, defaultCondition, conditions);
+    const obj = createPerformance(this, defaultCondition);
+    const { close } = obj;
+    const f = () => {
+      this._performances.delete(f);
+      return close.call(obj);
+    };
+    obj.close = f;
+    this._performances.add(f);
+    return obj;
   }
 
   /**
-   * Enable debug mode.
+   * Remove all performance monitoring.
+   */
+  removePerformances() {
+    this._performances.forEach((fn) => fn());
+  }
+
+  /**
+   * Remove all debug instances
    */
   debug(options: DebuggerOptions = {}) {
     const close = createDebugger(this, options);
-    this.debugCount++;
-    return () => {
+    const f = () => {
+      this._debugs.delete(f);
       close();
-      this.debugCount--;
     };
+    this._debugs.add(f);
+    return f;
+  }
+
+  removeDebugs() {
+    this._debugs.forEach((fn) => fn());
   }
 
   /**
@@ -161,7 +181,7 @@ export class PluginSystem<T extends Record<string, unknown>> {
             `"${key}" hook is not defined in plugin "${name}".`
           );
           // The loss of built-in plugins for performance statistics is negligible
-          const tag = name.startsWith(PERFORMACE_PLUGIN_PREFIX) ? "" : name;
+          const tag = name.startsWith(PERFORMANCE_PLUGIN_PREFIX) ? "" : name;
           if (once) {
             (this.lifecycle[key] as any).once(tag, obj[key]);
           } else {

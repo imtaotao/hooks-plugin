@@ -195,11 +195,14 @@ describe("GetOtherPlugin", () => {
     expect(spyGroupCollapsed).toHaveBeenCalled();
     expect(spyGroupEnd).toHaveBeenCalled();
 
-    spyTime.mockRestore();
-    spyTimeLog.mockRestore();
-    spyGroupCollapsed.mockRestore();
-    spyGroupEnd.mockRestore();
+    const restore = () => {
+      spyTime.mockRestore();
+      spyTimeLog.mockRestore();
+      spyGroupCollapsed.mockRestore();
+      spyGroupEnd.mockRestore();
+    };
 
+    restore();
     close();
     plSys.lifecycle.a.emit(1, 2);
 
@@ -207,6 +210,7 @@ describe("GetOtherPlugin", () => {
     expect(spyTimeLog).not.toHaveBeenCalled();
     expect(spyGroupCollapsed).not.toHaveBeenCalled();
     expect(spyGroupEnd).not.toHaveBeenCalled();
+    restore();
   });
 
   it("Group is `false`", () => {
@@ -275,7 +279,7 @@ describe("GetOtherPlugin", () => {
     check(false);
   });
 
-  it("Link performace", async () => {
+  it("Link performance", async () => {
     const plSys = new PluginSystem({
       a: new SyncHook<[{ name: string }]>(),
       b: new AsyncHook<[{ name: string }]>(),
@@ -305,7 +309,7 @@ describe("GetOtherPlugin", () => {
     expect(i).toBe(2);
   });
 
-  it("Link performace (auto call log)", async () => {
+  it("Link performance (auto call log)", async () => {
     const plSys = new PluginSystem({
       a: new SyncHook<[{ name: string }]>(),
       b: new AsyncHook<[{ name: string }]>(),
@@ -323,34 +327,52 @@ describe("GetOtherPlugin", () => {
     spyLog.mockRestore();
   });
 
-  it("Check `debugCount`", () => {
+  it("Check `removeDebugs`", () => {
     const plSys = new PluginSystem({
-      a: new SyncHook<[number]>(),
+      a: new SyncHook<[number, number], string>("ctxA"),
     });
 
     plSys.use({
-      name: "test",
+      name: "test1",
       hooks: {
-        a(data) {
-          expect(data).toBe(1);
+        a(a, b) {
+          expect(a).toBe(1);
+          expect(b).toBe(2);
         },
       },
     });
 
-    expect(plSys.debugCount).toBe(0);
-    const close1 = plSys.debug();
-    const close2 = plSys.debug();
-    expect(plSys.debugCount).toBe(2);
-    close1();
-    expect(plSys.debugCount).toBe(1);
-    close2();
-    expect(plSys.debugCount).toBe(0);
+    const spyTime = jest.spyOn(console, "time");
+    const spyTimeLog = jest.spyOn(console, "timeLog");
+    const spyGroupCollapsed = jest.spyOn(console, "groupCollapsed");
+    const spyGroupEnd = jest.spyOn(console, "groupEnd");
 
-    const close3 = plSys.debug();
-    expect(plSys.debugCount).toBe(1);
-    plSys.lifecycle.a.emit(1);
-    expect(plSys.debugCount).toBe(1);
-    close3();
-    expect(plSys.debugCount).toBe(0);
+    plSys.debug({
+      tag: "tag",
+      group: true,
+    });
+
+    plSys.lifecycle.a.emit(1, 2);
+    expect(spyTime).toHaveBeenCalled();
+    expect(spyTimeLog).toHaveBeenCalled();
+    expect(spyGroupCollapsed).toHaveBeenCalled();
+    expect(spyGroupEnd).toHaveBeenCalled();
+
+    const restore = () => {
+      spyTime.mockRestore();
+      spyTimeLog.mockRestore();
+      spyGroupCollapsed.mockRestore();
+      spyGroupEnd.mockRestore();
+    };
+
+    restore();
+    plSys.removeDebugs();
+    plSys.lifecycle.a.emit(1, 2);
+
+    expect(spyTime).not.toHaveBeenCalled();
+    expect(spyTimeLog).not.toHaveBeenCalled();
+    expect(spyGroupCollapsed).not.toHaveBeenCalled();
+    expect(spyGroupEnd).not.toHaveBeenCalled();
+    restore();
   });
 });

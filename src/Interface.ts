@@ -28,7 +28,7 @@ export interface EachEvent<T, C> {
   pluginExecTime: Record<string, number>;
 }
 
-export interface PerformaceEvent {
+export interface PerformanceEvent {
   time: number;
   equeValue: unknown;
   endContext: unknown;

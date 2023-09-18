@@ -1,6 +1,6 @@
 import { SyncHook } from "./SyncHook";
 import type { PluginSystem } from "./PluginSystem";
-import type { PerformaceEvent } from "./Interface";
+import type { PerformanceEvent } from "./Interface";
 import {
   currentTime,
   INVALID_VALUE,
@@ -8,16 +8,15 @@ import {
   getTargetInArgs,
   createMonitorTaskId,
   createMonitorPluginId,
-  PERFORMACE_PLUGIN_PREFIX,
+  PERFORMANCE_PLUGIN_PREFIX,
 } from "./Utils";
 
-export function createPerformace<T extends Record<string, unknown>>(
+export function createPerformance<T extends Record<string, unknown>>(
   plSys: PluginSystem<T>,
-  defaultCondition: string,
-  conditions?: Partial<Record<string, string>>
+  defaultCondition: string
 ) {
   let hooks = {};
-  const pluginName = `${PERFORMACE_PLUGIN_PREFIX}${createMonitorPluginId()}`;
+  const pluginName = `${PERFORMANCE_PLUGIN_PREFIX}${createMonitorPluginId()}`;
 
   // If value is equivalent, it represents an event bus
   // Note (need to guide users):
@@ -30,10 +29,18 @@ export function createPerformace<T extends Record<string, unknown>>(
   // Some information about each time a monitor is created is recorded here.
   let monitorTask: Record<
     number,
-    [string, string, SyncHook<[PerformaceEvent]>]
+    [
+      string,
+      string,
+      Partial<Record<string, string>>,
+      SyncHook<[PerformanceEvent]>
+    ]
   > = Object.create(null);
 
-  const findConditio = (key: string) => {
+  const findCondition = (
+    key: string,
+    conditions?: Partial<Record<string, string>>
+  ) => {
     if (!conditions) return defaultCondition;
     return conditions[key] || defaultCondition;
   };
@@ -41,10 +48,10 @@ export function createPerformace<T extends Record<string, unknown>>(
   for (const key in plSys.lifecycle) {
     (hooks as any)[key] = function (...args: Array<unknown>) {
       let value: unknown;
-      const condition = findConditio(key);
 
       for (const id in monitorTask) {
-        const [sk, ek, hook] = monitorTask[id];
+        const [sk, ek, conditions, hook] = monitorTask[id];
+        const condition = findCondition(key, conditions);
 
         if (key === ek) {
           value = getTargetInArgs(condition, args);
@@ -114,20 +121,24 @@ export function createPerformace<T extends Record<string, unknown>>(
       });
     },
 
-    monitor(sk: keyof T, ek: keyof T) {
+    monitor(
+      sk: keyof T,
+      ek: keyof T,
+      conditions?: Partial<Record<string, string>>
+    ) {
       const id = createMonitorTaskId();
-      const hook = new SyncHook<[PerformaceEvent]>();
-      const task = [sk, ek, hook];
+      const hook = new SyncHook<[PerformanceEvent]>();
+      const task = [sk, ek, conditions, hook];
       monitorTask[id] = task as any;
       this.taskHooks.add(hook);
       return hook;
     },
 
     taskHooks: {
-      hs: new Set<SyncHook<[PerformaceEvent]>>(),
-      watch: new Set<(hook: SyncHook<[PerformaceEvent]>) => void>(),
+      hs: new Set<SyncHook<[PerformanceEvent]>>(),
+      watch: new Set<(hook: SyncHook<[PerformanceEvent]>) => void>(),
 
-      add(hook: SyncHook<[PerformaceEvent]>) {
+      add(hook: SyncHook<[PerformanceEvent]>) {
         this.hs.add(hook);
         this.watch.forEach((fn) => fn(hook));
       },

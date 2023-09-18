@@ -1,6 +1,6 @@
 import { isBrowser, currentTime } from "./Utils";
 import type { PluginSystem } from "./PluginSystem";
-import type { TaskId, EachEvent, PerformaceEvent } from "./Interface";
+import type { TaskId, EachEvent, PerformanceEvent } from "./Interface";
 
 interface Data {
   tag?: string;
@@ -8,9 +8,9 @@ interface Data {
   e: EachEvent<unknown, unknown>;
 }
 
-interface PerformaceData {
+interface PerformanceData {
   tag?: string;
-  e: PerformaceEvent;
+  e: PerformanceEvent;
 }
 
 export interface DebuggerOptions {
@@ -20,18 +20,18 @@ export interface DebuggerOptions {
   filter?: string | ((e: Data) => boolean);
   performance?: ReturnType<PluginSystem<any>["performance"]>;
   receiver?: (data: Data) => void;
-  performanceReceiver?: (data: PerformaceData) => void;
+  performanceReceiver?: (data: PerformanceData) => void;
 }
 
 // If there is user defined performance data,
 // it should also be printed here.
-function logPerformace(
+function logPerformance(
   p: ReturnType<PluginSystem<any>["performance"]>,
-  performanceReceiver?: (data: PerformaceData) => void,
+  performanceReceiver?: (data: PerformanceData) => void,
   tag?: string
 ) {
-  const _tag = `[${tag || "debug"}_performace]`;
-  const fn = (e: PerformaceEvent) => {
+  const _tag = `[${tag || "debug"}_performance]`;
+  const fn = (e: PerformanceEvent) => {
     if (typeof performanceReceiver === "function") {
       performanceReceiver({ tag, e });
     } else {
@@ -64,7 +64,7 @@ export function createDebugger<T extends Record<string, unknown>>(
 
   if (!("group" in options)) group = isBrowser;
   if (!("logPluginTime" in options)) logPluginTime = true;
-  if (performance) logPerformace(performance, performanceReceiver, tag);
+  if (performance) logPerformance(performance, performanceReceiver, tag);
 
   const prefix = (e: EachEvent<unknown, unknown>) => {
     let p = `${_tag}${e.name}_${e.id}(t, args, ctx`;

@@ -4,7 +4,7 @@ const objectToString = Object.prototype.toString;
 
 export const INTERNAL = Symbol("internal_hooks");
 export const INVALID_VALUE = Symbol("invalid_condition_value");
-export const PERFORMACE_PLUGIN_PREFIX = "__performace_monitor__";
+export const PERFORMANCE_PLUGIN_PREFIX = "__performance_monitor__";
 
 export const isBrowser = typeof window !== "undefined";
 

@@ -11,5 +11,5 @@ export type {
   Plugin,
   PluginApis,
   EachEvent,
-  PerformaceEvent,
+  PerformanceEvent,
 } from "./src/Interface";

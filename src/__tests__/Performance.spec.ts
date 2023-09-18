@@ -1,6 +1,6 @@
 import { SyncHook, AsyncHook, PluginSystem } from "../../index";
 
-describe("Performace", () => {
+describe("Performance", () => {
   const timeout = (fn: () => void, t: number) => {
     return new Promise<void>((resolve) => {
       setTimeout(() => {
@@ -59,7 +59,7 @@ describe("Performace", () => {
     });
 
     let i = 0;
-    const p = plSys.performance("0.name", { b: "0.name1" });
+    const p = plSys.performance("0.name");
 
     p.monitor("a", "a").on((e) => {
       i++;
@@ -69,7 +69,7 @@ describe("Performace", () => {
       expect(e.endContext).toBe(null);
     });
 
-    p.monitor("a", "b").on((e) => {
+    p.monitor("a", "b", { b: "0.name1" }).on((e) => {
       i++;
       expect(typeof e.time === "number").toBe(true);
       expect(e.events).toEqual(["a", "b"]);
@@ -111,6 +111,41 @@ describe("Performace", () => {
     });
 
     p.close();
+
+    plSys.lifecycle.a.emit();
+
+    const p1 = timeout(() => {
+      plSys.lifecycle.a.emit();
+    }, 10);
+
+    const p2 = timeout(() => {
+      plSys.lifecycle.a.emit();
+      plSys.lifecycle.b.emit();
+      plSys.lifecycle.b.emit();
+    }, 20);
+
+    await Promise.all([p1, p2]);
+    expect(i).toBe(0);
+  });
+
+  it("Remove all monitor", async () => {
+    const plSys = new PluginSystem({
+      a: new SyncHook(),
+      b: new AsyncHook(),
+    });
+
+    let i = 0;
+    const p = plSys.performance("0.name");
+
+    p.monitor("a", "a").on(() => {
+      i++;
+    });
+
+    p.monitor("a", "b").on(() => {
+      i++;
+    });
+
+    plSys.removePerformances();
 
     plSys.lifecycle.a.emit();
 

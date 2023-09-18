@@ -27,7 +27,9 @@ Plugin system built through various hooks, inspired by [tapable](https://github.
 - `plSys.unlock`
 - `plSys.clone`
 - `plSys.debug`
+- `plSys.removeDebugs`
 - `plSys.performance`
+- `plSys.removePerformances`
 - `plSys.getPluginApis`
 
 
@@ -224,7 +226,7 @@ plSys.lifecycle.a.emit(1, 2);
 ```
 
 
-### Performaace
+### Performance
 
 ```ts
 import { SyncHook, PluginSystem } from "hooks-plugin";
