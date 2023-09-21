@@ -46,7 +46,7 @@ export function isNativeValue(val: unknown): val is BaseType {
   );
 }
 
-export function assert(condition: unknown, error?: string) {
+export function assert(condition: unknown, error?: string): asserts condition {
   if (!condition) {
     throw `${PREFIX}: ${error}`;
   }
