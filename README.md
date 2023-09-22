@@ -21,6 +21,7 @@ Plugin system built through various hooks, inspired by [tapable](https://github.
 
 - `plSys.use`
 - `plSys.remove`
+- `plSys.isUsed`
 - `plSys.beforeEach`
 - `plSys.afterEach`
 - `plSys.lock`

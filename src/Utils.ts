@@ -30,6 +30,10 @@ export function currentTime() {
     : Date.now();
 }
 
+export function hasOwn(obj: Record<any, any>, key: string) {
+  return Object.hasOwnProperty.call(obj, key);
+}
+
 export function isPlainObject(val: unknown): val is Object {
   return objectToString.call(val) === "[object Object]";
 }

@@ -463,6 +463,23 @@ describe("PluginSystem", () => {
     expect(i).toBe(6);
   });
 
+  it("Check `isUsed`", () => {
+    const plSys = new PluginSystem();
+
+    plSys.use({
+      name: "test",
+      hooks: {},
+    });
+
+    expect(() => {
+      (plSys as any).isUsed();
+    }).toThrowError();
+
+    expect(plSys.isUsed("test")).toBe(true);
+    expect(plSys.isUsed("test1")).toBe(false);
+    expect(plSys.isUsed("toString")).toBe(false);
+  });
+
   it("Type test", async () => {
     const plSys = new PluginSystem({
       syncHook: new SyncHook<[string, number]>(),

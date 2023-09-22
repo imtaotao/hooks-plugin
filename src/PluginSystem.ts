@@ -1,7 +1,6 @@
 import type { SyncHook } from "./SyncHook";
 import { createPerformance } from "./Performance";
 import { type DebuggerOptions, createDebugger } from "./Debugger";
-import { assert, isPlainObject, PERFORMANCE_PLUGIN_PREFIX } from "./Utils";
 import type {
   TaskId,
   HookType,
@@ -9,6 +8,12 @@ import type {
   PluginApis,
   EachCallback,
 } from "./Interface";
+import {
+  assert,
+  hasOwn,
+  isPlainObject,
+  PERFORMANCE_PLUGIN_PREFIX,
+} from "./Utils";
 
 export class PluginSystem<T extends Record<string, unknown>> {
   private _locked: boolean;
@@ -170,13 +175,13 @@ export class PluginSystem<T extends Record<string, unknown>> {
     assert(isPlainObject(plugin), "Invalid plugin configuration.");
     const { name } = plugin;
     assert(name && typeof name === "string", 'Plugin must provide a "name".');
-    assert(!this.plugins[name], `Repeat to register plugin hooks "${name}".`);
+    assert(!this.isUsed(name), `Repeat to register plugin hooks "${name}".`);
 
     const register = (obj?: Record<string, unknown>, once?: boolean) => {
       if (obj) {
         for (const key in obj) {
           assert(
-            this.lifecycle[key],
+            hasOwn(this.lifecycle, key),
             `"${key}" hook is not defined in plugin "${name}".`
           );
           // The loss of built-in plugins for performance statistics is negligible
@@ -206,8 +211,8 @@ export class PluginSystem<T extends Record<string, unknown>> {
     );
     assert(pluginName, 'Must provide a "name".');
 
-    const plugin = this.plugins[pluginName];
-    if (plugin) {
+    if (hasOwn(this.plugins, pluginName)) {
+      const plugin = this.plugins[pluginName];
       const rm = (obj?: (typeof plugin)["hooks"]) => {
         if (obj) {
           for (const key in obj) {
@@ -221,10 +226,18 @@ export class PluginSystem<T extends Record<string, unknown>> {
   }
 
   /**
+   * Determine whether a plug-in is registered.
+   */
+  isUsed(pluginName: string) {
+    assert(pluginName, 'Must provide a "name".');
+    return hasOwn(this.plugins, pluginName);
+  }
+
+  /**
    * Clone a brand new pluginSystem instance.
    */
   clone(usePlugin?: boolean) {
-    const newLifecycle = {};
+    const newLifecycle = Object.create(null);
     for (const key in this.lifecycle) {
       (newLifecycle as any)[key] = (this.lifecycle[key] as any).clone();
     }
