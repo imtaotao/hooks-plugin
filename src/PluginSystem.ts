@@ -226,7 +226,7 @@ export class PluginSystem<T extends Record<string, unknown>> {
   }
 
   /**
-   * Determine whether a plug-in is registered.
+   * Determine whether a plugin is registered.
    */
   isUsed(pluginName: string) {
     assert(pluginName, 'Must provide a "name".');
