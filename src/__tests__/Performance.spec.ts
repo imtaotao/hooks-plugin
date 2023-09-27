@@ -17,7 +17,7 @@ describe("Performance", () => {
     });
 
     let i = 0;
-    const p = plSys.performance("0.name");
+    const p = plSys.performance("[0].name");
 
     p.monitor("a", "a").on((e) => {
       i++;
@@ -59,7 +59,7 @@ describe("Performance", () => {
     });
 
     let i = 0;
-    const p = plSys.performance("0.name");
+    const p = plSys.performance("[0].name");
 
     p.monitor("a", "a").on((e) => {
       i++;
@@ -69,7 +69,7 @@ describe("Performance", () => {
       expect(e.endContext).toBe(null);
     });
 
-    p.monitor("a", "b", { b: "0.name1" }).on((e) => {
+    p.monitor("a", "b", { b: "[0].name1" }).on((e) => {
       i++;
       expect(typeof e.time === "number").toBe(true);
       expect(e.events).toEqual(["a", "b"]);
@@ -100,7 +100,7 @@ describe("Performance", () => {
     });
 
     let i = 0;
-    const p = plSys.performance("0.name");
+    const p = plSys.performance("[0].name");
 
     p.monitor("a", "a").on(() => {
       i++;
@@ -139,7 +139,7 @@ describe("Performance", () => {
     });
 
     let i = 0;
-    const p = plSys.performance("0.name");
+    const p = plSys.performance("[0].name");
 
     p.monitor("a", "a").on(() => {
       i++;
@@ -179,7 +179,7 @@ describe("Performance", () => {
       });
 
       let i = 0;
-      const p = plSys.performance("0.a");
+      const p = plSys.performance("[0].a");
 
       p.monitor("a", "a").on(() => {
         i++;
@@ -215,7 +215,7 @@ describe("Performance", () => {
       a: new SyncHook<[string]>(),
       b: new AsyncHook<[string]>(),
     });
-    const p = plSys.performance("0");
+    const p = plSys.performance("[0]");
 
     p.monitor("a", "b").on(() => {
       i++;

@@ -34,7 +34,7 @@ export function hasOwn(obj: Record<any, any>, key: string) {
   return Object.hasOwnProperty.call(obj, key);
 }
 
-export function isPlainObject(val: unknown): val is Object {
+export function isPlainObject(val: unknown): val is object {
   return objectToString.call(val) === "[object Object]";
 }
 
@@ -52,7 +52,7 @@ export function isNativeValue(val: unknown): val is BaseType {
 
 export function assert(condition: unknown, error?: string): asserts condition {
   if (!condition) {
-    throw `${PREFIX}: ${error}`;
+    throw new Error(`${PREFIX}: ${error}`);
   }
 }
 
@@ -72,15 +72,15 @@ export function checkReturnData(
 }
 
 export function getTargetInArgs(key: string, args: Array<unknown>) {
-  const parts = key.split(".");
-  (parts as any)[0] = Number(parts[0]);
-  if (parts.length === 1) {
-    return args[parts[0] as unknown as number];
-  }
   let target: unknown = args;
+  const parts = key.split(".");
   for (let i = 0, l = parts.length; i < l; i++) {
     if (!target) return INVALID_VALUE;
-    target = (target as any)[parts[i]];
+    let p: string | number = parts[i];
+    if (p.startsWith("[") && p.endsWith("]")) {
+      p = Number(p.slice(1, -1));
+    }
+    target = (target as any)[p];
   }
   return target;
 }

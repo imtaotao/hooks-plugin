@@ -286,7 +286,7 @@ describe("GetOtherPlugin", () => {
     });
 
     let i = 0;
-    const p = plSys.performance("0.name");
+    const p = plSys.performance("[0].name");
     const close = plSys.debug({
       tag: "tag",
       performance: p,
@@ -320,7 +320,7 @@ describe("GetOtherPlugin", () => {
     });
 
     const spyLog = jest.spyOn(console, "log");
-    const p = plSys.performance("0.name");
+    const p = plSys.performance("[0].name");
     plSys.debug({ performance: p });
 
     p.monitor("a", "b");

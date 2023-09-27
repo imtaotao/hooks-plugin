@@ -238,7 +238,7 @@ const plSys = new PluginSystem({
 });
 
 // Take the `name` prop from the `0` parameter for matching
-const p = plSys.performance("0.name");
+const p = plSys.performance("[0].name");
 p.monitor("a", "a").on((e) => console.log(e.time)); // 200.400
 p.monitor("a", "b").on((e) => console.log(e.time)); // 0.199
 
