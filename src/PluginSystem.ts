@@ -156,12 +156,16 @@ export class PluginSystem<T extends Record<string, unknown>> {
     );
     const obj = createPerformance(this, defaultCondition);
     const { close } = obj;
-    const f = () => {
-      this._performances.delete(f);
+    const fn = () => {
+      assert(
+        !this._locked,
+        "The plugin system is locked and removal operations are not allowed."
+      );
+      this._performances.delete(fn);
       return close.call(obj);
     };
-    obj.close = f;
-    this._performances.add(f);
+    obj.close = fn;
+    this._performances.add(fn);
     return obj;
   }
 
@@ -185,12 +189,16 @@ export class PluginSystem<T extends Record<string, unknown>> {
       "The plugin system is locked and the debugger cannot be added."
     );
     const close = createDebugger(this, options);
-    const f = () => {
-      this._debugs.delete(f);
+    const fn = () => {
+      assert(
+        !this._locked,
+        "The plugin system is locked and removal operations are not allowed."
+      );
+      this._debugs.delete(fn);
       close();
     };
-    this._debugs.add(f);
-    return f;
+    this._debugs.add(fn);
+    return fn;
   }
 
   /**
