@@ -10,6 +10,7 @@ module.exports = {
   coverageDirectory: 'coverage',
   transform: { '\\.ts$': 'ts-jest' },
   globals: {
+    __TEST__: 'true',
     __VERSION__: '"unknow"',
   },
 };

@@ -7,10 +7,10 @@
   "module": "./dist/hooks.esm-bundler.js",
   "types": "./dist/index.d.ts",
   "scripts": {
-    "dev": "http-server ./ --cors -c-1",
-    "build": "rm -rf dist && rollup --config",
     "test": "jest",
     "test:cov": "jest --coverage",
+    "dev": "http-server ./ --cors -c-1",
+    "build": "rm -rf dist && rollup --config && rm -rf dist/src/__tests__",
     "format": "prettier --write --parser typescript \"(src|dist)/**/*.(js|ts?(x))\""
   },
   "files": [
@@ -21,6 +21,7 @@
   "keywords": [
     "hooks",
     "plugin",
+    "microkernel",
     "event",
     "tapable",
     "debug"

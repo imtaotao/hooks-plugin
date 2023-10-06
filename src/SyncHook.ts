@@ -1,5 +1,11 @@
 import { assert, INTERNAL, currentTime, createTaskId } from "./Utils";
-import type { TaskId, ArgsType, Callback, HookType } from "./Interface";
+import type {
+  TaskId,
+  ArgsType,
+  Callback,
+  HookType,
+  ExecErrorEvent,
+} from "./Interface";
 
 export class SyncHook<T extends Array<unknown>, C = null, K = void> {
   private _locked: boolean;
@@ -7,6 +13,7 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
   public type: HookType;
   public listeners = new Set<Callback<T, C, K>>();
   public tags = new WeakMap<Callback<T, C, K>, string>();
+  public errors = new Set<(e: ExecErrorEvent) => void>();
   public before?: SyncHook<[TaskId, HookType, C, ArgsType<T>]>;
   public after?: SyncHook<
     [TaskId, HookType, C, ArgsType<T>, Record<string, number>]
@@ -23,6 +30,22 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
     if (_internal !== INTERNAL) {
       this.before = new SyncHook(null, "SyncHook", INTERNAL);
       this.after = new SyncHook(null, "SyncHook", INTERNAL);
+    }
+  }
+
+  /**
+   * This is an internal method.
+   */
+  _emitError(error: unknown, hook: (...args: Array<any>) => any, tag?: string) {
+    if (this.errors.size > 0) {
+      this.errors.forEach((fn) =>
+        fn({
+          tag,
+          hook,
+          error,
+          type: this.type,
+        })
+      );
     }
   }
 
@@ -107,11 +130,18 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
         if (map && tag) {
           map[tag] = currentTime();
         }
-        const res = fn.apply(this.context, data);
-        if (map && tag) {
-          map[tag] = currentTime() - map[tag];
+        const record = () => {
+          if (map && tag) {
+            map[tag] = currentTime() - map[tag];
+          }
+        };
+        try {
+          fn.apply(this.context, data);
+          record();
+        } catch (e) {
+          record();
+          this._emitError(e, fn, tag);
         }
-        return res;
       });
       // The data being mapped will only be meaningful if `after` is not empty.
       this.after?.emit(id, this.type, this.context, data, map!);
@@ -134,6 +164,14 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
     assert(!this._locked, "The current hook is now locked.");
     this.listeners.clear();
     return this;
+  }
+
+  /**
+   * Listen for errors when the hook is running.
+   */
+  listenError(fn: (e: ExecErrorEvent) => void) {
+    assert(!this._locked, "The current hook is now locked.");
+    this.errors.add(fn);
   }
 
   /**

@@ -34,6 +34,7 @@ const outputConfigs = {
 
 const createReplacePlugin = () => {
   return replace({
+    __TEST__: `false`,
     __VERSION__: `'${version}'`,
   });
 };

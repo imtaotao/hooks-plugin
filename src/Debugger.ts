@@ -1,6 +1,11 @@
 import { isBrowser, currentTime } from "./Utils";
 import type { PluginSystem } from "./PluginSystem";
-import type { TaskId, EachEvent, PerformanceEvent } from "./Interface";
+import type {
+  TaskId,
+  EachEvent,
+  ListenErrorEvent,
+  PerformanceEvent,
+} from "./Interface";
 
 interface Data {
   tag?: string;
@@ -16,10 +21,12 @@ interface PerformanceData {
 export interface DebuggerOptions {
   tag?: string;
   group?: boolean;
+  listenError?: boolean;
   logPluginTime?: boolean;
   filter?: string | ((e: Data) => boolean);
   performance?: ReturnType<PluginSystem<any>["performance"]>;
   receiver?: (data: Data) => void;
+  errorReceiver?: (data: ListenErrorEvent) => void;
   performanceReceiver?: (data: PerformanceData) => void;
 }
 
@@ -55,14 +62,18 @@ export function createDebugger<T extends Record<string, unknown>>(
     group,
     filter,
     receiver,
+    listenError,
     logPluginTime,
+    errorReceiver,
     performance,
     performanceReceiver,
   } = options;
+  let unsubscribeError: (() => void) | null = null;
   let map: Record<TaskId, { t: number }> = Object.create(null);
   const _tag = `[${tag || "debug"}]: `;
 
   if (!("group" in options)) group = isBrowser;
+  if (!("listenError" in options)) listenError = true;
   if (!("logPluginTime" in options)) logPluginTime = true;
   if (performance) logPerformance(performance, performanceReceiver, tag);
 
@@ -112,9 +123,26 @@ export function createDebugger<T extends Record<string, unknown>>(
     }
   });
 
+  if (listenError) {
+    unsubscribeError = plSys.listenError((e) => {
+      if (typeof errorReceiver === "function") {
+        errorReceiver(e);
+      } else {
+        console.error(
+          `[${tag}]: The error originated from "${e.tag}.${e.name}(${e.type})".\n`,
+          `The hook function is: ${String(e.hook)}\n\n`,
+          e.error
+        );
+      }
+    });
+  }
+
   return () => {
     unsubscribeBefore();
     unsubscribeAfter();
+    if (unsubscribeError) {
+      unsubscribeError();
+    }
     map = Object.create(null);
     if (performance) {
       performance.close();

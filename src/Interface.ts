@@ -18,6 +18,13 @@ export interface Plugin<
   };
 }
 
+export interface ExecErrorEvent {
+  tag?: string;
+  error: unknown;
+  type: HookType;
+  hook: (...args: Array<any>) => any;
+}
+
 export interface EachEvent<T, C> {
   id: TaskId;
   args: T;
@@ -34,6 +41,11 @@ export interface PerformanceEvent {
   endArgs: Array<unknown>;
   events: [string, string];
 }
+
+export type ListenErrorEvent = ExecErrorEvent & {
+  tag: string;
+  name: string;
+};
 
 export type TaskId = ReturnType<typeof createTaskId>;
 export type EachCallback<T, C> = (e: EachEvent<T, C>) => void;

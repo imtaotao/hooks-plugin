@@ -30,18 +30,33 @@ export class AsyncHook<T extends Array<unknown>, C = null> extends SyncHook<
         if (prev === false) {
           return false; // Abort process
         } else if (i < ls.length) {
+          let res: CallbackReturnType<void>;
           const fn = ls[i++];
           const tag = this.tags.get(fn);
           if (map && tag) {
             map[tag] = currentTime();
           }
-          const res = fn.apply(this.context, data);
-          return Promise.resolve(res).then((res) => {
+          const record = () => {
             if (map && tag) {
               map[tag] = currentTime() - map[tag];
             }
-            return call(res);
-          });
+          };
+          try {
+            res = fn.apply(this.context, data);
+          } catch (e) {
+            // If there is an error in the function call,
+            // there is no need to monitor the result of the promise.
+            record();
+            this._emitError(e, fn, tag);
+            return call(prev);
+          }
+          return Promise.resolve(res)
+            .finally(record)
+            .then(call)
+            .catch((e) => {
+              this._emitError(e, fn, tag);
+              return call(prev);
+            });
         } else {
           return prev;
         }

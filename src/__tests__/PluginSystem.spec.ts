@@ -463,6 +463,30 @@ describe("PluginSystem", () => {
     expect(i).toBe(6);
   });
 
+  it("Check create new pluginSystem", () => {
+    const plSys = new PluginSystem().create((hooks) => {
+      return {
+        a: new hooks.SyncHook<[number], string>("ctx"),
+      };
+    });
+
+    let i = 0;
+
+    plSys.use({
+      name: "test",
+      hooks: {
+        a(data) {
+          i++;
+          expect(data).toBe(1);
+          expect(this).toBe("ctx");
+        },
+      },
+    });
+
+    plSys.lifecycle.a.emit(1);
+    expect(i).toBe(1);
+  });
+
   it("Check `isUsed`", () => {
     const plSys = new PluginSystem();
 

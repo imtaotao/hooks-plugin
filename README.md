@@ -21,17 +21,21 @@ Plugin system built through various hooks, inspired by [tapable](https://github.
 
 - `plSys.use`
 - `plSys.remove`
+- `plSys.create`
 - `plSys.isUsed`
 - `plSys.beforeEach`
 - `plSys.afterEach`
 - `plSys.lock`
 - `plSys.unlock`
+- `plSys.listenLock`
 - `plSys.clone`
 - `plSys.debug`
 - `plSys.removeDebugs`
 - `plSys.performance`
 - `plSys.removePerformances`
+- `plSys.listenError`
 - `plSys.getPluginApis`
+
 
 
 ## Usage
@@ -209,7 +213,7 @@ plSys.use({
 
 const close = plSys.debug({ tag: "tag" });
 
-plSys.lifecycle.a.emit(1, 2); // [tag]: a_1(t, args, ctx, pt): 309.36ms [1, 2] 'ctx' { test1: 308.51ms }
+plSys.lifecycle.a.emit(1, 2); // [tag]: a_1(t, args, ctx, pt): 309.36ms [1, 2] 'ctx' { test: 308.51ms }
 
 // Close debug mode
 close();

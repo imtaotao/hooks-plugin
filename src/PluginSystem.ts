@@ -1,4 +1,8 @@
-import type { SyncHook } from "./SyncHook";
+import { SyncHook } from "./SyncHook";
+import { AsyncHook } from "./AsyncHook";
+import { AsyncParallelHook } from "./AsyncParallelHook";
+import { SyncWaterfallHook } from "./SyncWaterfallHook";
+import { AsyncWaterfallHook } from "./AsyncWaterfallHook";
 import { createPerformance } from "./Performance";
 import { type DebuggerOptions, createDebugger } from "./Debugger";
 import type {
@@ -7,6 +11,8 @@ import type {
   Plugin,
   PluginApis,
   EachCallback,
+  ExecErrorEvent,
+  ListenErrorEvent,
 } from "./Interface";
 import {
   assert,
@@ -15,10 +21,20 @@ import {
   PERFORMANCE_PLUGIN_PREFIX,
 } from "./Utils";
 
+const HOOKS = {
+  SyncHook,
+  AsyncHook,
+  AsyncParallelHook,
+  SyncWaterfallHook,
+  AsyncWaterfallHook,
+};
+
 export class PluginSystem<T extends Record<string, unknown>> {
   private _locked: boolean;
   private _debugs: Set<() => void>;
   private _performances: Set<() => void>;
+  private _lockListenSet: Set<(locked: boolean) => void>;
+
   public lifecycle: T;
   public v = __VERSION__;
   public plugins: Record<string, Plugin<T, PluginApis[string]>>;
@@ -27,10 +43,14 @@ export class PluginSystem<T extends Record<string, unknown>> {
     this._locked = false;
     this._debugs = new Set();
     this._performances = new Set();
+    this._lockListenSet = new Set();
     this.plugins = Object.create(null);
     this.lifecycle = lifecycle || Object.create(null);
   }
 
+  /**
+   * This is an internal method.
+   */
   private _onEmitLifeHook<T extends Array<unknown>, C>(
     type: "before" | "after",
     fn: EachCallback<T, C>
@@ -63,13 +83,19 @@ export class PluginSystem<T extends Record<string, unknown>> {
       };
       (this.lifecycle[key] as SyncHook<T, C>)[type]!.on(map[key]);
     }
-
     return () => {
       for (const key in this.lifecycle) {
         (this.lifecycle[key] as SyncHook<T, C>)[type]!.remove(map[key]);
       }
       map = Object.create(null);
     };
+  }
+
+  /**
+   * Observing the changes in `lock`.
+   */
+  listenLock(fn: (locked: boolean) => void) {
+    this._lockListenSet.add(fn);
   }
 
   /**
@@ -80,6 +106,9 @@ export class PluginSystem<T extends Record<string, unknown>> {
     for (const key in this.lifecycle) {
       (this.lifecycle[key] as any).lock();
     }
+    if (this._lockListenSet.size > 0) {
+      this._lockListenSet.forEach((fn) => fn(true));
+    }
   }
 
   /**
@@ -89,6 +118,9 @@ export class PluginSystem<T extends Record<string, unknown>> {
     this._locked = false;
     for (const key in this.lifecycle) {
       (this.lifecycle[key] as any).unlock();
+    }
+    if (this._lockListenSet.size > 0) {
+      this._lockListenSet.forEach((fn) => fn(false));
     }
   }
 
@@ -115,6 +147,10 @@ export class PluginSystem<T extends Record<string, unknown>> {
    */
   performance(defaultCondition: string): ReturnType<typeof createPerformance> {
     assert(
+      !this._locked,
+      "The plugin system is locked and performance cannot be monitored."
+    );
+    assert(
       defaultCondition && typeof defaultCondition === "string",
       "A judgment `conditions` is required to use `performance`."
     );
@@ -133,13 +169,21 @@ export class PluginSystem<T extends Record<string, unknown>> {
    * Remove all performance monitoring.
    */
   removePerformances() {
+    assert(
+      !this._locked,
+      "The plugin system is locked and removal operations are not allowed."
+    );
     this._performances.forEach((fn) => fn());
   }
 
   /**
-   * Remove all debug instances.
+   * Add debugger.
    */
   debug(options: DebuggerOptions = {}) {
+    assert(
+      !this._locked,
+      "The plugin system is locked and the debugger cannot be added."
+    );
     const close = createDebugger(this, options);
     const f = () => {
       this._debugs.delete(f);
@@ -149,7 +193,14 @@ export class PluginSystem<T extends Record<string, unknown>> {
     return f;
   }
 
+  /**
+   * Remove all debug instances.
+   */
   removeDebugs() {
+    assert(
+      !this._locked,
+      "The plugin system is locked and removal operations are not allowed."
+    );
     this._debugs.forEach((fn) => fn());
   }
 
@@ -159,6 +210,32 @@ export class PluginSystem<T extends Record<string, unknown>> {
   getPluginApis<N extends keyof PluginApis>(pluginName: N) {
     return this.plugins[pluginName as string]
       .apis as PluginApis[typeof pluginName];
+  }
+
+  /**
+   * Listen for errors when the hook is running.
+   */
+  listenError(fn: (data: ListenErrorEvent) => void) {
+    assert(
+      !this._locked,
+      "The plugin system is locked and cannot listen for errors."
+    );
+    const map = Object.create(null);
+    for (const key in this.lifecycle) {
+      map[key] = (e: ExecErrorEvent) => {
+        fn(Object.assign(e as any, { name: key }));
+      };
+      (this.lifecycle[key] as any).listenError(map[key]);
+    }
+    return () => {
+      assert(
+        !this._locked,
+        "The plugin system is locked and the listening error cannot be removed."
+      );
+      for (const key in this.lifecycle) {
+        (this.lifecycle[key] as any).errors.delete(map[key]);
+      }
+    };
   }
 
   /**
@@ -231,6 +308,15 @@ export class PluginSystem<T extends Record<string, unknown>> {
   isUsed(pluginName: string) {
     assert(pluginName, 'Must provide a "name".');
     return hasOwn(this.plugins, pluginName);
+  }
+
+  /**
+   * Create a new plugin system.
+   */
+  create<T extends (hooks: typeof HOOKS) => Record<string, unknown>>(
+    callback: T
+  ) {
+    return new PluginSystem<ReturnType<T>>(callback(HOOKS) as any);
   }
 
   /**

@@ -1,5 +1,5 @@
 import { SyncHook } from "./SyncHook";
-import { currentTime, createTaskId } from "./Utils";
+import { isPromise, currentTime, createTaskId } from "./Utils";
 import type { TaskId, ArgsType } from "./Interface";
 
 export class AsyncParallelHook<
@@ -31,11 +31,29 @@ export class AsyncParallelHook<
             if (map && tag) {
               map[tag] = currentTime();
             }
-            const res = fn.apply(this.context, data);
-            if (map && tag) {
-              map[tag] = currentTime() - map[tag];
+            const record = () => {
+              if (map && tag) {
+                map[tag] = currentTime() - map[tag];
+              }
+            };
+            try {
+              const res = fn.apply(this.context, data);
+              if (isPromise(res)) {
+                // `Thenable` may not provide `catch` method,
+                // It needs to be wrapped with a promise.
+                return Promise.resolve(res).catch((e) => {
+                  record();
+                  this._emitError(e, fn, tag);
+                  return null;
+                });
+              } else {
+                record();
+                return res;
+              }
+            } catch (e) {
+              this._emitError(e, fn, tag);
+              return null;
             }
-            return res;
           })
         );
       }

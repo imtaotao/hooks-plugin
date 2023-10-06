@@ -33,15 +33,23 @@ export class SyncWaterfallHook<
         if (map && tag) {
           map[tag] = currentTime();
         }
-        const tempData = fn.call(this.context, data);
-        if (map && tag) {
-          map[tag] = currentTime() - map[tag];
+        const record = () => {
+          if (map && tag) {
+            map[tag] = currentTime() - map[tag];
+          }
+        };
+        try {
+          const tempData = fn.call(this.context, data);
+          assert(
+            checkReturnData(data, tempData),
+            `The return value of hook "${this.type}" is incorrect.`
+          );
+          data = tempData;
+          record();
+        } catch (e) {
+          record();
+          this._emitError(e, fn, tag);
         }
-        assert(
-          checkReturnData(data, tempData),
-          `The return value of hook "${this.type}" is incorrect.`
-        );
-        data = tempData;
       }
       this.after?.emit(id, this.type, this.context, [data], map!);
     }

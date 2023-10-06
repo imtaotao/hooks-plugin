@@ -2,7 +2,6 @@ import type { BaseType } from "./Interface";
 
 const objectToString = Object.prototype.toString;
 
-const PREFIX = "[hooksPlugin]";
 export const INTERNAL = Symbol("internal_hooks");
 export const INVALID_VALUE = Symbol("invalid_condition_value");
 export const PERFORMANCE_PLUGIN_PREFIX = "__performance_monitor__";
@@ -34,6 +33,12 @@ export function hasOwn(obj: Record<any, any>, key: string) {
   return Object.hasOwnProperty.call(obj, key);
 }
 
+export function isPromise(val: unknown): val is Promise<unknown> {
+  return Boolean(
+    val && typeof val === "object" && typeof (val as any).then === "function"
+  );
+}
+
 export function isPlainObject(val: unknown): val is object {
   return objectToString.call(val) === "[object Object]";
 }
@@ -52,7 +57,7 @@ export function isNativeValue(val: unknown): val is BaseType {
 
 export function assert(condition: unknown, error?: string): asserts condition {
   if (!condition) {
-    throw new Error(`${PREFIX}: ${error}`);
+    throw new Error(error);
   }
 }
 

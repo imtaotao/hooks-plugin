@@ -33,27 +33,43 @@ export class AsyncWaterfallHook<
       }
       this.before?.emit(id, this.type, this.context, [data]);
 
-      const call = (prevData: T | false): any => {
-        if (prevData === false) {
+      const call = (prev: T | false): any => {
+        if (prev === false) {
           return false;
         } else {
           assert(
-            checkReturnData(data, prevData),
+            checkReturnData(data, prev),
             `The return value of hook "${this.type}" is incorrect.`
           );
-          data = prevData as T;
+          data = prev as T;
           if (i < ls.length) {
+            let res: CallbackReturnType<T>;
             const fn = ls[i++];
             const tag = this.tags.get(fn);
             if (map && tag) {
               map[tag] = currentTime();
             }
-            return Promise.resolve(fn.call(this.context, data)).then((res) => {
+            const record = () => {
               if (map && tag) {
                 map[tag] = currentTime() - map[tag];
               }
-              return call(res);
-            });
+            };
+            try {
+              res = fn.call(this.context, prev);
+            } catch (e) {
+              // If there is an error in the function call,
+              // there is no need to monitor the result of the promise.
+              record();
+              this._emitError(e, fn, tag);
+              return call(prev);
+            }
+            return Promise.resolve(res)
+              .finally(record)
+              .then(call)
+              .catch((e) => {
+                this._emitError(e, fn, tag);
+                return call(prev);
+              });
           }
         }
         return data;
