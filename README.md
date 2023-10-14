@@ -28,14 +28,13 @@ Plugin system built through various hooks, inspired by [tapable](https://github.
 - `plSys.lock`
 - `plSys.unlock`
 - `plSys.listenLock`
-- `plSys.clone`
-- `plSys.debug`
-- `plSys.removeDebugs`
-- `plSys.performance`
-- `plSys.removePerformances`
 - `plSys.listenError`
 - `plSys.getPluginApis`
-
+- `plSys.clone`
+- `plSys.debug`
+- `plSys.performance`
+- `plSys.removeAllDebug`
+- `plSys.removeAllPerformance`
 
 
 ## Usage

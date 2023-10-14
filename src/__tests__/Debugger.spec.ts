@@ -331,7 +331,7 @@ describe("GetOtherPlugin", () => {
     spyLog.mockRestore();
   });
 
-  it("Check `removeDebugs`", () => {
+  it("Check `removeAllDebug`", () => {
     const plSys = new PluginSystem({
       a: new SyncHook<[number, number], string>("ctxA"),
     });
@@ -370,7 +370,7 @@ describe("GetOtherPlugin", () => {
     };
 
     restore();
-    plSys.removeDebugs();
+    plSys.removeAllDebug();
     plSys.lifecycle.a.emit(1, 2);
 
     expect(spyTime).not.toHaveBeenCalled();

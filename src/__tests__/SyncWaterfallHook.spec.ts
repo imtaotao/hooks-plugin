@@ -42,7 +42,10 @@ describe("SyncWaterfallHook", () => {
       return data;
     });
 
-    expect(() => hook.emit({ name: "chen" })).toThrowError();
+    let e = false;
+    hook.listenError(() => (e = true));
+    hook.emit({ name: "chen" });
+    expect(e).toBe(true);
   });
 
   it("Check this", () => {

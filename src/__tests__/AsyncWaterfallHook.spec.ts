@@ -53,13 +53,10 @@ describe("AsyncWaterfallHook", () => {
       return data;
     });
 
-    let isError = false;
-    try {
-      await hook.emit({ name: "chen" });
-    } catch {
-      isError = true;
-    }
-    expect(isError).toBe(true);
+    let e = false;
+    hook.listenError(() => (e = true));
+    await hook.emit({ name: "chen" });
+    expect(e).toBe(true);
   });
 
   it("Check the termination procedure", async () => {

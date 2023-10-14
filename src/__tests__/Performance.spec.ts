@@ -149,7 +149,7 @@ describe("Performance", () => {
       i++;
     });
 
-    plSys.removePerformances();
+    plSys.removeAllPerformance();
 
     expect(() => {
       p.monitor("a", "a").on(() => {});

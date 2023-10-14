@@ -172,7 +172,7 @@ export class PluginSystem<T extends Record<string, unknown>> {
   /**
    * Remove all performance monitoring.
    */
-  removePerformances() {
+  removeAllPerformance() {
     assert(
       !this._locked,
       "The plugin system is locked and removal operations are not allowed."
@@ -204,7 +204,7 @@ export class PluginSystem<T extends Record<string, unknown>> {
   /**
    * Remove all debug instances.
    */
-  removeDebugs() {
+  removeAllDebug() {
     assert(
       !this._locked,
       "The plugin system is locked and removal operations are not allowed."
