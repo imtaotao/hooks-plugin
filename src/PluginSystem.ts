@@ -49,7 +49,7 @@ export class PluginSystem<T extends Record<string, unknown>> {
   }
 
   /**
-   * This is an internal method.
+   * @internal
    */
   private _onEmitLifeHook<T extends Array<unknown>, C>(
     type: "before" | "after",

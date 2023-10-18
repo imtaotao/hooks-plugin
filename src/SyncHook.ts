@@ -34,7 +34,7 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
   }
 
   /**
-   * This is an internal method.
+   * @internal
    */
   _emitError(error: unknown, hook: (...args: Array<any>) => any, tag?: string) {
     if (this.errors.size > 0) {
