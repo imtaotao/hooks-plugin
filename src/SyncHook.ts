@@ -50,6 +50,8 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
           type: this.type,
         })
       );
+    } else {
+      throw error;
     }
   }
 
@@ -111,7 +113,7 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
     }
     const self = this;
     this.on(tag, function wrapper(...args: Array<unknown>) {
-      self.remove(wrapper);
+      self.remove(wrapper, INTERNAL);
       return (fn as Callback<T, C, K>).apply(this, args as any);
     });
     return this;
@@ -155,8 +157,10 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
   /**
    * Remove all hooks.
    */
-  remove(fn: Callback<T, C, K>) {
-    assert(!this._locked, "The current hook is now locked.");
+  remove(fn: Callback<T, C, K>, _flag?: Symbol) {
+    if (_flag !== INTERNAL) {
+      assert(!this._locked, "The current hook is now locked.");
+    }
     this.listeners.delete(fn);
     return this;
   }

@@ -7,7 +7,7 @@
     "target": "es6",
     "strict": true,
     "resolveJsonModule": true,
-    "lib": ["es6", "dom"],
+    "lib": ["es2018", "dom"],
     "moduleResolution": "node",
     "allowJs": true,
     "sourceMap": true,
