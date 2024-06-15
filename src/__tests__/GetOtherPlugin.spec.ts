@@ -1,8 +1,8 @@
-import { SyncHook, PluginSystem } from "../../index";
+import { SyncHook, PluginSystem } from '../../index';
 
-declare module "../../index" {
+declare module '../../index' {
   interface PluginApis {
-    testApis: (typeof plugin)["apis"];
+    testApis: (typeof plugin)['apis'];
   }
 }
 
@@ -13,7 +13,7 @@ const plSys = new PluginSystem({
 });
 
 const plugin = plSys.use({
-  name: "testApis",
+  name: 'testApis',
   hooks: {
     a(data) {},
   },
@@ -27,10 +27,10 @@ const plugin = plSys.use({
   },
 });
 
-describe("GetOtherPlugin", () => {
-  it("Get other plugin apis", () => {
-    const apis = plSys.getPluginApis("testApis");
-    apis.set("a", 1);
-    expect(apis.get("a")).toBe(1);
+describe('GetOtherPlugin', () => {
+  it('Get other plugin apis', () => {
+    const apis = plSys.getPluginApis('testApis');
+    apis.set('a', 1);
+    expect(apis.get('a')).toBe(1);
   });
 });

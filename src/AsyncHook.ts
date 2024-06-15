@@ -1,6 +1,7 @@
-import { SyncHook } from "./SyncHook";
-import { currentTime, createTaskId } from "./Utils";
-import type { TaskId, ArgsType, CallbackReturnType } from "./Interface";
+import { now } from 'aidly';
+import { SyncHook } from './SyncHook';
+import { createTaskId } from './Utils';
+import type { TaskId, ArgsType, CallbackReturnType } from './Interface';
 
 export class AsyncHook<T extends Array<unknown>, C = null> extends SyncHook<
   T,
@@ -8,7 +9,7 @@ export class AsyncHook<T extends Array<unknown>, C = null> extends SyncHook<
   CallbackReturnType<void>
 > {
   constructor(context?: C) {
-    super(context, "AsyncHook");
+    super(context, 'AsyncHook');
   }
 
   emit(...data: ArgsType<T>): Promise<CallbackReturnType<void>> {
@@ -34,11 +35,11 @@ export class AsyncHook<T extends Array<unknown>, C = null> extends SyncHook<
           const fn = ls[i++];
           const tag = this.tags.get(fn);
           if (map && tag) {
-            map[tag] = currentTime();
+            map[tag] = now();
           }
           const record = () => {
             if (map && tag) {
-              map[tag] = currentTime() - map[tag];
+              map[tag] = now() - map[tag];
             }
           };
           try {

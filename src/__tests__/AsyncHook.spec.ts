@@ -1,18 +1,18 @@
-import { AsyncHook } from "../../index";
+import { AsyncHook } from '../../index';
 
-describe("AsyncHook", () => {
-  it("Check return value", async () => {
+describe('AsyncHook', () => {
+  it('Check return value', async () => {
     let i = 0;
     const hook = new AsyncHook<[string]>(null);
-    expect(hook.type).toBe("AsyncHook");
+    expect(hook.type).toBe('AsyncHook');
 
     hook.on(async (a) => {
       expect(i).toBe(0);
-      expect(a).toBe("1");
+      expect(a).toBe('1');
       i++;
     });
     hook.on((a) => {
-      expect(a).toBe("1");
+      expect(a).toBe('1');
       return new Promise<void>((resolve) => {
         setTimeout(() => {
           expect(i).toBe(1);
@@ -22,19 +22,19 @@ describe("AsyncHook", () => {
       });
     });
     hook.on((a) => {
-      expect(a).toBe("1");
+      expect(a).toBe('1');
       expect(i).toBe(2);
       i++;
     });
 
-    await hook.emit("1");
+    await hook.emit('1');
     expect(i).toBe(3);
   });
 
-  it("Check execution order", async () => {
+  it('Check execution order', async () => {
     let i = 0;
     const hook = new AsyncHook();
-    expect(hook.type).toBe("AsyncHook");
+    expect(hook.type).toBe('AsyncHook');
 
     hook.once(() => {
       i++;
@@ -63,10 +63,10 @@ describe("AsyncHook", () => {
     expect(i).toBe(5);
   });
 
-  it("Check asynchronous response", async () => {
+  it('Check asynchronous response', async () => {
     const hook = new AsyncHook<[void]>();
     const obj = { fn() {} };
-    const spy = jest.spyOn(obj, "fn");
+    const spy = jest.spyOn(obj, 'fn');
     hook.on(() => Promise.resolve(false));
     hook.on(obj.fn);
 
@@ -75,7 +75,7 @@ describe("AsyncHook", () => {
     expect(spy).not.toHaveBeenCalled();
   });
 
-  it("Check this", async () => {
+  it('Check this', async () => {
     const context = {};
     const hook = new AsyncHook<[number], typeof context>(context);
     expect(hook.context === context).toBe(true);
@@ -93,7 +93,7 @@ describe("AsyncHook", () => {
     await hook.emit(1);
   });
 
-  it("Check this defaults to `null`", async () => {
+  it('Check this defaults to `null`', async () => {
     const hook = new AsyncHook<[number]>();
     expect(hook.context).toBe(null);
 
@@ -105,9 +105,9 @@ describe("AsyncHook", () => {
     await hook.emit(1);
   });
 
-  it("Check add tag", async () => {
+  it('Check add tag', async () => {
     const hook = new AsyncHook<[number]>();
-    hook.on("tag", async (a) => {
+    hook.on('tag', async (a) => {
       expect(a).toEqual(1);
     });
     await hook.emit(1);

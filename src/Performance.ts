@@ -1,20 +1,18 @@
-import { SyncHook } from "./SyncHook";
-import type { PluginSystem } from "./PluginSystem";
-import type { PerformanceEvent } from "./Interface";
+import { now, assert, isNativeValue } from 'aidly';
+import { SyncHook } from './SyncHook';
+import type { PluginSystem } from './PluginSystem';
+import type { PerformanceEvent } from './Interface';
 import {
-  assert,
-  currentTime,
   INVALID_VALUE,
-  isNativeValue,
   getTargetInArgs,
   createMonitorTaskId,
   createMonitorPluginId,
   PERFORMANCE_PLUGIN_PREFIX,
-} from "./Utils";
+} from './Utils';
 
 export function createPerformance<T extends Record<string, unknown>>(
   plSys: PluginSystem<T>,
-  defaultCondition: string
+  defaultCondition: string,
 ) {
   let hooks = {};
   let closed = false;
@@ -35,13 +33,13 @@ export function createPerformance<T extends Record<string, unknown>>(
       string,
       string,
       Partial<Record<string, string>>,
-      SyncHook<[PerformanceEvent]>
+      SyncHook<[PerformanceEvent]>,
     ]
   > = Object.create(null);
 
   const findCondition = (
     key: string,
-    conditions?: Partial<Record<string, string>>
+    conditions?: Partial<Record<string, string>>,
   ) => {
     if (!conditions) return defaultCondition;
     return conditions[key] || defaultCondition;
@@ -64,13 +62,13 @@ export function createPerformance<T extends Record<string, unknown>>(
 
             if (prevObj) {
               const prevTime = prevObj[`${id}_${sk}`];
-              if (typeof prevTime === "number") {
+              if (typeof prevTime === 'number') {
                 hook.emit({
                   endArgs: args,
                   endContext: this,
                   events: [sk, ek],
                   equeValue: value,
-                  time: currentTime() - prevTime,
+                  time: now() - prevTime,
                 });
               }
             }
@@ -83,7 +81,7 @@ export function createPerformance<T extends Record<string, unknown>>(
           if (value !== INVALID_VALUE) {
             let obj;
             const k = `${id}_${sk}`;
-            const t = currentTime();
+            const t = now();
 
             if (isNativeValue(value)) {
               obj = records2[value as any];
@@ -133,9 +131,9 @@ export function createPerformance<T extends Record<string, unknown>>(
     monitor(
       sk: keyof T,
       ek: keyof T,
-      conditions?: Partial<Record<string, string>>
+      conditions?: Partial<Record<string, string>>,
     ) {
-      assert(!closed, "Unable to add tasks to a closed performance observer.");
+      assert(!closed, 'Unable to add tasks to a closed performance observer.');
       const id = createMonitorTaskId();
       const hook = new SyncHook<[PerformanceEvent]>();
       const task = [sk, ek, conditions, hook];

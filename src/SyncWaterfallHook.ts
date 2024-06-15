@@ -1,24 +1,19 @@
-import { SyncHook } from "./SyncHook";
-import {
-  assert,
-  currentTime,
-  createTaskId,
-  isPlainObject,
-  checkReturnData,
-} from "./Utils";
+import { now, assert, isPlainObject } from 'aidly';
+import { SyncHook } from './SyncHook';
+import { createTaskId, checkReturnData } from './Utils';
 
 export class SyncWaterfallHook<
   T extends Record<any, unknown>,
-  C = null
+  C = null,
 > extends SyncHook<[T], C, T> {
   constructor(context?: C) {
-    super(context, "SyncWaterfallHook");
+    super(context, 'SyncWaterfallHook');
   }
 
   emit(data: T) {
     assert(
       isPlainObject(data),
-      `"${this.type}" hook response data must be an object.`
+      `"${this.type}" hook response data must be an object.`,
     );
     if (this.listeners.size > 0) {
       const id = createTaskId();
@@ -31,18 +26,18 @@ export class SyncWaterfallHook<
       for (const fn of this.listeners) {
         const tag = this.tags.get(fn);
         if (map && tag) {
-          map[tag] = currentTime();
+          map[tag] = now();
         }
         const record = () => {
           if (map && tag) {
-            map[tag] = currentTime() - map[tag];
+            map[tag] = now() - map[tag];
           }
         };
         try {
           const tempData = fn.call(this.context, data);
           assert(
             checkReturnData(data, tempData),
-            `The return value of hook "${this.type}" is incorrect.`
+            `The return value of hook "${this.type}" is incorrect.`,
           );
           data = tempData;
           record();

@@ -1,13 +1,14 @@
-import { SyncHook } from "./SyncHook";
-import { isPromise, currentTime, createTaskId } from "./Utils";
-import type { TaskId, ArgsType } from "./Interface";
+import { now, isPromise } from 'aidly';
+import { SyncHook } from './SyncHook';
+import { createTaskId } from './Utils';
+import type { TaskId, ArgsType } from './Interface';
 
 export class AsyncParallelHook<
   T extends Array<unknown>,
-  C = null
+  C = null,
 > extends SyncHook<T, C, void | Promise<void>> {
   constructor(context?: C) {
-    super(context, "AsyncParallelHook");
+    super(context, 'AsyncParallelHook');
   }
 
   emit(...data: ArgsType<T>) {
@@ -29,11 +30,11 @@ export class AsyncParallelHook<
           Promise.resolve().then(() => {
             const tag = this.tags.get(fn);
             if (map && tag) {
-              map[tag] = currentTime();
+              map[tag] = now();
             }
             const record = () => {
               if (map && tag) {
-                map[tag] = currentTime() - map[tag];
+                map[tag] = now() - map[tag];
               }
             };
             try {
@@ -54,7 +55,7 @@ export class AsyncParallelHook<
               this._emitError(e, fn, tag);
               return null;
             }
-          })
+          }),
         );
       }
     }

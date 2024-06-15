@@ -5,28 +5,18 @@ import replace from '@rollup/plugin-replace';
 import commonjs from '@rollup/plugin-commonjs';
 import typescript from 'rollup-plugin-typescript2'
 import { nodeResolve } from '@rollup/plugin-node-resolve';
-import { version } from './package.json';
-
-const banner =
-  '/*!\n' +
-  ` * hooksPlugin.js v${version}\n` +
-  ` * (c) 2023-${new Date().getFullYear()} Imtaotao\n` +
-  ' * Released under the MIT License.\n' +
-  ' */'
+import { version, dependencies } from './package.json';
 
 const outputConfigs = {
   umd: {
-    banner,
     format: 'umd',
     file: path.resolve(__dirname, 'dist/hooks.umd.js'),
   },
   cjs: {
-    banner,
     format: 'cjs',
     file: path.resolve(__dirname, 'dist/hooks.cjs.js'),
   },
   'esm-bundler': {
-    banner,
     format: 'es',
     file: path.resolve(__dirname, 'dist/hooks.esm-bundler.js'),
   },
@@ -47,8 +37,9 @@ function createConfig(format, output) {
   let nodePlugins = [];
   const isUmdBuild = /umd/.test(format);
   const input = path.resolve(__dirname, 'index.ts')
+  const external = isUmdBuild ? [] : Object.keys(dependencies);
 
-  output.externalLiveBindings = false;
+  output.externalLiveBindings = true;
   if (isUmdBuild) output.name = 'HooksPlugin';
   
   if (format !== 'cjs') {
@@ -61,6 +52,7 @@ function createConfig(format, output) {
   return {
     input,
     output,
+    external,
     plugins: [
       cleanup(),
       json({

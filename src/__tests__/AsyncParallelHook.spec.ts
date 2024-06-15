@@ -2,10 +2,10 @@ import {
   PluginSystem,
   AsyncParallelHook,
   AsyncWaterfallHook,
-} from "../../index";
+} from '../../index';
 
-describe("AsyncParallelHook", () => {
-  it("Check order, parameter and results", async () => {
+describe('AsyncParallelHook', () => {
+  it('Check order, parameter and results', async () => {
     const plSys = new PluginSystem({
       // `AsyncWaterfallHook` will be queued for execution
       waterfall: new AsyncWaterfallHook<{ n: number }>(),
@@ -14,7 +14,7 @@ describe("AsyncParallelHook", () => {
     });
 
     plSys.use({
-      name: "test1",
+      name: 'test1',
       hooks: {
         waterfall(data) {
           return new Promise((resolve) => {
@@ -38,7 +38,7 @@ describe("AsyncParallelHook", () => {
     });
 
     plSys.use({
-      name: "test2",
+      name: 'test2',
       hooks: {
         waterfall(data) {
           return new Promise((resolve) => {
@@ -62,7 +62,7 @@ describe("AsyncParallelHook", () => {
     });
 
     plSys.use({
-      name: "test3",
+      name: 'test3',
       hooks: {
         waterfall(data) {
           return new Promise((resolve) => {
@@ -86,7 +86,7 @@ describe("AsyncParallelHook", () => {
     });
 
     plSys.use({
-      name: "test4",
+      name: 'test4',
       hooks: {
         waterfall(data) {
           expect(data.n).toBe(3);
@@ -105,7 +105,7 @@ describe("AsyncParallelHook", () => {
     const task1 = plSys.lifecycle.parallel.emit(data1);
 
     expect(data1.n).toBe(0);
-    expect(typeof task1.then === "function").toBe(true);
+    expect(typeof task1.then === 'function').toBe(true);
     const res1 = await task1;
     expect(res1).toBe(undefined);
     expect(data1.n).toBe(4);
@@ -120,16 +120,16 @@ describe("AsyncParallelHook", () => {
     expect(res2 === data2).toBe(true);
   });
 
-  it("Check type", async () => {
-    expect(new AsyncParallelHook().type).toBe("AsyncParallelHook");
-    expect(new AsyncParallelHook(null).type).toBe("AsyncParallelHook");
+  it('Check type', async () => {
+    expect(new AsyncParallelHook().type).toBe('AsyncParallelHook');
+    expect(new AsyncParallelHook(null).type).toBe('AsyncParallelHook');
   });
 
-  it("Check this", async () => {
+  it('Check this', async () => {
     const data = {};
     const context = {};
     const hook = new AsyncParallelHook<[Record<string, never>], typeof context>(
-      context
+      context,
     );
     expect(hook.context === context).toBe(true);
 
@@ -146,7 +146,7 @@ describe("AsyncParallelHook", () => {
     await hook.emit(data);
   });
 
-  it("Check this defaults to `null`", async () => {
+  it('Check this defaults to `null`', async () => {
     const data = {};
     const hook = new AsyncParallelHook<[Record<string, never>]>();
     expect(hook.context).toBe(null);
@@ -159,9 +159,9 @@ describe("AsyncParallelHook", () => {
     await hook.emit(data);
   });
 
-  it("Check add tag", async () => {
+  it('Check add tag', async () => {
     const hook = new AsyncParallelHook<[number]>();
-    hook.on("tag", async (a) => {
+    hook.on('tag', async (a) => {
       expect(a).toEqual(1);
     });
     await hook.emit(1);

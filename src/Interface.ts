@@ -1,20 +1,20 @@
-import type { createTaskId } from "./Utils";
+import type { createTaskId } from './Utils';
 
 // Plugins can extend this type themselves
 export interface PluginApis extends Record<string, Record<string, unknown>> {}
 
 export interface Plugin<
   T extends Record<string, any>,
-  K = Record<string, unknown>
+  K = Record<string, unknown>,
 > {
   name: string;
   hooks: {
-    [k in keyof T]?: Parameters<T[k]["on"]>[1];
+    [k in keyof T]?: Parameters<T[k]['on']>[1];
   };
   apis?: K;
   version?: string;
   onceHooks?: {
-    [k in keyof T]?: Parameters<T[k]["on"]>[1];
+    [k in keyof T]?: Parameters<T[k]['on']>[1];
   };
 }
 
@@ -53,17 +53,8 @@ export type ArgsType<T> = T extends Array<any> ? T : Array<unknown>;
 export type CallbackReturnType<T> = T | false | Promise<T | false>;
 export type Callback<T, C, K> = (this: C, ...args: ArgsType<T>) => K;
 export type HookType =
-  | "SyncHook"
-  | "SyncWaterfallHook"
-  | "AsyncHook"
-  | "AsyncParallelHook"
-  | "AsyncWaterfallHook";
-
-export type BaseType =
-  | number
-  | bigint
-  | string
-  | symbol
-  | boolean
-  | null
-  | undefined;
+  | 'SyncHook'
+  | 'SyncWaterfallHook'
+  | 'AsyncHook'
+  | 'AsyncParallelHook'
+  | 'AsyncWaterfallHook';

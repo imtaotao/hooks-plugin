@@ -1,11 +1,12 @@
-import { assert, INTERNAL, currentTime, createTaskId } from "./Utils";
+import { now, assert } from 'aidly';
+import { INTERNAL, createTaskId } from './Utils';
 import type {
   TaskId,
   ArgsType,
   Callback,
   HookType,
   ExecErrorEvent,
-} from "./Interface";
+} from './Interface';
 
 export class SyncHook<T extends Array<unknown>, C = null, K = void> {
   private _locked: boolean;
@@ -20,16 +21,16 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
   >;
 
   // Only `context` is allowed to be passed in from outside
-  constructor(context?: C, _type: HookType = "SyncHook", _internal?: Symbol) {
+  constructor(context?: C, _type: HookType = 'SyncHook', _internal?: Symbol) {
     this.type = _type;
     this._locked = false;
-    this.context = typeof context === "undefined" ? (null as any) : context;
+    this.context = typeof context === 'undefined' ? (null as any) : context;
 
     // `before` and `after` hooks should not call other `before` and `after` hooks recursively,
     // as it can lead to infinite loops.
     if (_internal !== INTERNAL) {
-      this.before = new SyncHook(null, "SyncHook", INTERNAL);
-      this.after = new SyncHook(null, "SyncHook", INTERNAL);
+      this.before = new SyncHook(null, 'SyncHook', INTERNAL);
+      this.after = new SyncHook(null, 'SyncHook', INTERNAL);
     }
   }
 
@@ -39,7 +40,7 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
   protected _emitError(
     error: unknown,
     hook: (...args: Array<any>) => any,
-    tag?: string
+    tag?: string,
   ) {
     if (this.errors.size > 0) {
       this.errors.forEach((fn) =>
@@ -48,7 +49,7 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
           hook,
           error,
           type: this.type,
-        })
+        }),
       );
     } else {
       throw error;
@@ -88,13 +89,13 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
   on(fn: Callback<T, C, K>): void;
   on(tag: string, fn: Callback<T, C, K>): void;
   on(tag: string | Callback<T, C, K>, fn?: Callback<T, C, K>) {
-    assert(!this._locked, "The current hook is now locked.");
-    if (typeof tag === "function") {
+    assert(!this._locked, 'The current hook is now locked.');
+    if (typeof tag === 'function') {
       fn = tag;
-      tag = "";
+      tag = '';
     }
-    assert(typeof fn === "function", `Invalid parameter in "${this.type}".`);
-    if (tag && typeof tag === "string") {
+    assert(typeof fn === 'function', `Invalid parameter in "${this.type}".`);
+    if (tag && typeof tag === 'string') {
       this.tags.set(fn as Callback<T, C, K>, tag);
     }
     this.listeners.add(fn as Callback<T, C, K>);
@@ -107,9 +108,9 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
   once(fn: Callback<T, C, K>): void;
   once(tag: string, fn: Callback<T, C, K>): void;
   once(tag: string | Callback<T, C, K>, fn?: Callback<T, C, K>) {
-    if (typeof tag === "function") {
+    if (typeof tag === 'function') {
       fn = tag;
-      tag = "";
+      tag = '';
     }
     const self = this;
     this.on(tag, function wrapper(...args: Array<unknown>) {
@@ -134,11 +135,11 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
       this.listeners.forEach((fn) => {
         const tag = this.tags.get(fn);
         if (map && tag) {
-          map[tag] = currentTime();
+          map[tag] = now();
         }
         const record = () => {
           if (map && tag) {
-            map[tag] = currentTime() - map[tag];
+            map[tag] = now() - map[tag];
           }
         };
         try {
@@ -159,7 +160,7 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
    */
   remove(fn: Callback<T, C, K>, _flag?: Symbol) {
     if (_flag !== INTERNAL) {
-      assert(!this._locked, "The current hook is now locked.");
+      assert(!this._locked, 'The current hook is now locked.');
     }
     this.listeners.delete(fn);
     return this;
@@ -169,7 +170,7 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
    * Remove a specific hook.
    */
   removeAll() {
-    assert(!this._locked, "The current hook is now locked.");
+    assert(!this._locked, 'The current hook is now locked.');
     this.listeners.clear();
     return this;
   }
@@ -178,7 +179,7 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
    * Listen for errors when the hook is running.
    */
   listenError(fn: (e: ExecErrorEvent) => void) {
-    assert(!this._locked, "The current hook is now locked.");
+    assert(!this._locked, 'The current hook is now locked.');
     this.errors.add(fn);
   }
 
@@ -189,7 +190,7 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
     return new (this.constructor as any)(
       this.context,
       this.type,
-      this.before ? null : INTERNAL
+      this.before ? null : INTERNAL,
     ) as this;
   }
 }

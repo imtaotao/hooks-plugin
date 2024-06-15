@@ -1,20 +1,20 @@
-import { AsyncWaterfallHook } from "../../index";
+import { AsyncWaterfallHook } from '../../index';
 
-describe("AsyncWaterfallHook", () => {
-  it("Check order, results and errors", async () => {
+describe('AsyncWaterfallHook', () => {
+  it('Check order, results and errors', async () => {
     const hook = new AsyncWaterfallHook<{ name: string }>(null);
-    expect(hook.type).toBe("AsyncWaterfallHook");
+    expect(hook.type).toBe('AsyncWaterfallHook');
 
     hook.on(async (data) => {
-      expect(data.name).toBe("chen");
-      data.name += "1";
+      expect(data.name).toBe('chen');
+      data.name += '1';
       return data;
     });
 
     hook.on((data) => {
       return new Promise((resolve) => {
-        expect(data.name).toBe("chen1");
-        data.name += "2";
+        expect(data.name).toBe('chen1');
+        data.name += '2';
         setTimeout(() => {
           resolve(data);
         }, 10);
@@ -22,25 +22,25 @@ describe("AsyncWaterfallHook", () => {
     });
 
     hook.once(async (data) => {
-      expect(data.name).toBe("chen12");
-      data.name += "3";
+      expect(data.name).toBe('chen12');
+      data.name += '3';
       return data;
     });
 
-    let data = await hook.emit({ name: "chen" });
-    expect(data).toEqual({ name: "chen123" });
-    data = await hook.emit({ name: "chen" });
-    expect(data).toEqual({ name: "chen12" });
+    let data = await hook.emit({ name: 'chen' });
+    expect(data).toEqual({ name: 'chen123' });
+    data = await hook.emit({ name: 'chen' });
+    expect(data).toEqual({ name: 'chen12' });
 
     hook.removeAll();
 
     // Return data in the same format
     hook.on(() => {
-      return { name: "test" };
+      return { name: 'test' };
     });
 
-    data = await hook.emit({ name: "chen" });
-    expect(data).toEqual({ name: "test" });
+    data = await hook.emit({ name: 'chen' });
+    expect(data).toEqual({ name: 'test' });
 
     hook.removeAll();
 
@@ -49,19 +49,19 @@ describe("AsyncWaterfallHook", () => {
       return {};
     });
     hook.on(async (data) => {
-      data.name += "2";
+      data.name += '2';
       return data;
     });
 
     let e = false;
     hook.listenError(() => (e = true));
-    await hook.emit({ name: "chen" });
+    await hook.emit({ name: 'chen' });
     expect(e).toBe(true);
   });
 
-  it("Check the termination procedure", async () => {
+  it('Check the termination procedure', async () => {
     const hook = new AsyncWaterfallHook<{ n: number }>();
-    expect(hook.type).toBe("AsyncWaterfallHook");
+    expect(hook.type).toBe('AsyncWaterfallHook');
 
     hook.on((data) => {
       return data.n > 0 ? false : data;
@@ -81,11 +81,11 @@ describe("AsyncWaterfallHook", () => {
     expect(data).toBe(false);
   });
 
-  it("Check this", async () => {
+  it('Check this', async () => {
     const data = {};
     const context = {};
     const hook = new AsyncWaterfallHook<Record<string, never>, typeof context>(
-      context
+      context,
     );
     expect(hook.context === context).toBe(true);
 
@@ -104,7 +104,7 @@ describe("AsyncWaterfallHook", () => {
     await hook.emit(data);
   });
 
-  it("Check this defaults to `null`", async () => {
+  it('Check this defaults to `null`', async () => {
     const data = {};
     const hook = new AsyncWaterfallHook();
     expect(hook.context).toBe(null);
@@ -118,9 +118,9 @@ describe("AsyncWaterfallHook", () => {
     await hook.emit(data);
   });
 
-  it("Check add tag", async () => {
+  it('Check add tag', async () => {
     const hook = new AsyncWaterfallHook<{ n: number }>();
-    hook.on("tag", async (data) => {
+    hook.on('tag', async (data) => {
       expect(data).toEqual({ n: 1 });
       return data;
     });

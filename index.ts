@@ -11,6 +11,8 @@ export type {
   Plugin,
   PluginApis,
   EachEvent,
+  Callback,
   PerformanceEvent,
   ListenErrorEvent,
+  CallbackReturnType,
 } from "./src/Interface";

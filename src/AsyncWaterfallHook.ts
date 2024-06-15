@@ -1,25 +1,20 @@
-import { SyncHook } from "./SyncHook";
-import {
-  assert,
-  currentTime,
-  createTaskId,
-  isPlainObject,
-  checkReturnData,
-} from "./Utils";
-import type { TaskId, CallbackReturnType } from "./Interface";
+import { now, assert, isPlainObject } from 'aidly';
+import { SyncHook } from './SyncHook';
+import { createTaskId, checkReturnData } from './Utils';
+import type { TaskId, CallbackReturnType } from './Interface';
 
 export class AsyncWaterfallHook<
   T extends Record<any, unknown>,
-  C = null
+  C = null,
 > extends SyncHook<[T], C, CallbackReturnType<T>> {
   constructor(context?: C) {
-    super(context, "AsyncWaterfallHook");
+    super(context, 'AsyncWaterfallHook');
   }
 
   emit(data: T): Promise<T | false> {
     assert(
       isPlainObject(data),
-      `"${this.type}" hook response data must be an object.`
+      `"${this.type}" hook response data must be an object.`,
     );
     let i = 0;
     let id: TaskId;
@@ -39,7 +34,7 @@ export class AsyncWaterfallHook<
         } else {
           assert(
             checkReturnData(data, prev),
-            `The return value of hook "${this.type}" is incorrect.`
+            `The return value of hook "${this.type}" is incorrect.`,
           );
           data = prev as T;
           if (i < ls.length) {
@@ -47,11 +42,11 @@ export class AsyncWaterfallHook<
             const fn = ls[i++];
             const tag = this.tags.get(fn);
             if (map && tag) {
-              map[tag] = currentTime();
+              map[tag] = now();
             }
             const record = () => {
               if (map && tag) {
-                map[tag] = currentTime() - map[tag];
+                map[tag] = now() - map[tag];
               }
             };
             try {

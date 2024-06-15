@@ -1,58 +1,58 @@
-import { SyncWaterfallHook } from "../../index";
+import { SyncWaterfallHook } from '../../index';
 
-describe("SyncWaterfallHook", () => {
-  it("Check results and order", () => {
+describe('SyncWaterfallHook', () => {
+  it('Check results and order', () => {
     const hook = new SyncWaterfallHook<{ name: string }>(null);
-    expect(hook.type).toBe("SyncWaterfallHook");
+    expect(hook.type).toBe('SyncWaterfallHook');
 
     hook.on((data) => {
-      expect(data.name).toBe("chen");
-      data.name += "1";
+      expect(data.name).toBe('chen');
+      data.name += '1';
       return data;
     });
 
     hook.on((data) => {
-      expect(data.name).toBe("chen1");
-      data.name += "2";
+      expect(data.name).toBe('chen1');
+      data.name += '2';
       return data;
     });
 
     hook.once((data) => {
-      expect(data.name).toBe("chen12");
-      data.name += "3";
+      expect(data.name).toBe('chen12');
+      data.name += '3';
       return data;
     });
 
-    let data = hook.emit({ name: "chen" });
-    expect(data).toEqual({ name: "chen123" });
-    data = hook.emit({ name: "chen" });
-    expect(data).toEqual({ name: "chen12" });
+    let data = hook.emit({ name: 'chen' });
+    expect(data).toEqual({ name: 'chen123' });
+    data = hook.emit({ name: 'chen' });
+    expect(data).toEqual({ name: 'chen12' });
   });
 
-  it("check for errors", () => {
+  it('check for errors', () => {
     const hook = new SyncWaterfallHook<{ name: string }>();
-    expect(hook.type).toBe("SyncWaterfallHook");
+    expect(hook.type).toBe('SyncWaterfallHook');
 
     hook.on((() => {
-      return "";
+      return '';
     }) as any);
 
     hook.on((data) => {
-      data.name += "2";
+      data.name += '2';
       return data;
     });
 
     let e = false;
     hook.listenError(() => (e = true));
-    hook.emit({ name: "chen" });
+    hook.emit({ name: 'chen' });
     expect(e).toBe(true);
   });
 
-  it("Check this", () => {
+  it('Check this', () => {
     const data = {};
     const context = {};
     const hook = new SyncWaterfallHook<Record<string, never>, typeof context>(
-      context
+      context,
     );
     expect(hook.context === context).toBe(true);
 
@@ -71,7 +71,7 @@ describe("SyncWaterfallHook", () => {
     hook.emit(data);
   });
 
-  it("Check this defaults to `null`", () => {
+  it('Check this defaults to `null`', () => {
     const data = {};
     const hook = new SyncWaterfallHook();
     expect(hook.context).toBe(null);
@@ -85,9 +85,9 @@ describe("SyncWaterfallHook", () => {
     hook.emit(data);
   });
 
-  it("Check add tag", () => {
+  it('Check add tag', () => {
     const hook = new SyncWaterfallHook<{ n: number }>();
-    hook.on("tag", (data) => {
+    hook.on('tag', (data) => {
       expect(data).toEqual({ n: 1 });
       return data;
     });

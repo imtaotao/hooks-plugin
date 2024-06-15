@@ -1,70 +1,24 @@
-import type { BaseType } from "./Interface";
+import { isPlainObject } from 'aidly';
 
-const objectToString = Object.prototype.toString;
+export const INTERNAL = Symbol('internal_hooks');
+export const INVALID_VALUE = Symbol('invalid_condition_value');
+export const PERFORMANCE_PLUGIN_PREFIX = '__performance_monitor__';
 
-export const INTERNAL = Symbol("internal_hooks");
-export const INVALID_VALUE = Symbol("invalid_condition_value");
-export const PERFORMANCE_PLUGIN_PREFIX = "__performance_monitor__";
-
-export const isBrowser = typeof window !== "undefined";
+export const isBrowser = typeof window !== 'undefined';
 
 let taskId = 1;
-export function createTaskId() {
-  return taskId++;
-}
+export const createTaskId = () => taskId++;
 
 let monitorTaskId = 1;
-export function createMonitorTaskId() {
-  return monitorTaskId++;
-}
+export const createMonitorTaskId = () => monitorTaskId++;
 
 let monitorPluginId = 1;
-export function createMonitorPluginId() {
-  return monitorPluginId++;
-}
+export const createMonitorPluginId = () => monitorPluginId++;
 
-export function currentTime() {
-  return typeof performance?.now === "function"
-    ? performance.now()
-    : Date.now();
-}
-
-export function hasOwn(obj: Record<any, any>, key: string) {
-  return Object.hasOwnProperty.call(obj, key);
-}
-
-export function isPromise(val: unknown): val is Promise<unknown> {
-  return Boolean(
-    val && typeof val === "object" && typeof (val as any).then === "function"
-  );
-}
-
-export function isPlainObject(val: unknown): val is object {
-  return objectToString.call(val) === "[object Object]";
-}
-
-export function isNativeValue(val: unknown): val is BaseType {
-  return (
-    typeof val === "number" ||
-    typeof val === "bigint" ||
-    typeof val === "string" ||
-    typeof val === "symbol" ||
-    typeof val === "boolean" ||
-    val === undefined ||
-    val === null
-  );
-}
-
-export function assert(condition: unknown, error?: string): asserts condition {
-  if (!condition) {
-    throw new Error(error);
-  }
-}
-
-export function checkReturnData(
+export const checkReturnData = (
   originData: Record<string, unknown>,
-  returnData: Record<string, unknown>
-) {
+  returnData: Record<string, unknown>,
+) => {
   if (!isPlainObject(returnData)) return false;
   if (originData !== returnData) {
     for (const key in originData) {
@@ -74,18 +28,18 @@ export function checkReturnData(
     }
   }
   return true;
-}
+};
 
-export function getTargetInArgs(key: string, args: Array<unknown>) {
+export const getTargetInArgs = (key: string, args: Array<unknown>) => {
   let target: unknown = args;
-  const parts = key.split(".");
+  const parts = key.split('.');
   for (let i = 0, l = parts.length; i < l; i++) {
     if (!target) return INVALID_VALUE;
     let p: string | number = parts[i];
-    if (p.startsWith("[") && p.endsWith("]")) {
+    if (p.startsWith('[') && p.endsWith(']')) {
       p = Number(p.slice(1, -1));
     }
     target = (target as any)[p];
   }
   return target;
-}
+};
