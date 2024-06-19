@@ -250,7 +250,9 @@ export class PluginSystem<T extends Record<string, unknown>> {
   use(plugin: Plugin<T> | ((plSys: this) => Plugin<T>)) {
     assert(
       !this._locked,
-      'The plugin system is locked and new plugins cannot be added.',
+      `The plugin system is locked and new plugins cannot be added${
+        plugin.name ? `(${plugin.name})` : ''
+      }.`,
     );
     if (typeof plugin === 'function') plugin = plugin(this);
     assert(isPlainObject(plugin), 'Invalid plugin configuration.');
