@@ -1,6 +1,7 @@
-node_modules/
-dist/
-coverage/
+node_modules
+dist
+coverage
+test.ts
 .DS_Store
 yarn.lock
 package-lock.json

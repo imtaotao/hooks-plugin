@@ -32,7 +32,6 @@ export class PluginSystem<T extends Record<string, unknown>> {
   private _lockListenSet: Set<(locked: boolean) => void>;
 
   public lifecycle: T;
-  public v = __VERSION__;
   public plugins: Record<string, Plugin<T, PluginApis[string]>>;
 
   constructor(lifecycle?: T) {

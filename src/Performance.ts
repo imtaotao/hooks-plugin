@@ -1,4 +1,4 @@
-import { now, assert, isNativeValue } from 'aidly';
+import { now, assert, isPrimitiveValue } from 'aidly';
 import { SyncHook } from './SyncHook';
 import type { PluginSystem } from './PluginSystem';
 import type { PerformanceEvent } from './Interface';
@@ -56,7 +56,7 @@ export function createPerformance<T extends Record<string, unknown>>(
         if (key === ek) {
           value = getTargetInArgs(condition, args);
           if (value !== INVALID_VALUE) {
-            const prevObj = isNativeValue(value)
+            const prevObj = isPrimitiveValue(value)
               ? records2[value as any]
               : records1.get(value as any);
 
@@ -83,7 +83,7 @@ export function createPerformance<T extends Record<string, unknown>>(
             const k = `${id}_${sk}`;
             const t = now();
 
-            if (isNativeValue(value)) {
+            if (isPrimitiveValue(value)) {
               obj = records2[value as any];
               if (!obj) {
                 obj = Object.create(null);
@@ -106,7 +106,6 @@ export function createPerformance<T extends Record<string, unknown>>(
   plSys.use({
     hooks,
     name: pluginName,
-    version: __VERSION__,
   });
 
   return {
