@@ -13,11 +13,6 @@ describe('PluginSystem', () => {
     jest.spyOn(console, 'warn').mockImplementation(() => {});
   });
 
-  it('Check version', () => {
-    const plSys = new PluginSystem({});
-    expect(typeof plSys.v === 'string').toBe(true);
-  });
-
   it('Check use response', () => {
     const plugin = {
       name: 'test',

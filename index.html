@@ -6,18 +6,13 @@
   <title>hooks-plugin</title>
 </head>
 <body>
-  <script src="./dist/hooks.umd.js"></script>
+  <script src="https://unpkg.com/hooks-plugin/dist/hooks.umd.js"></script>
   <script>
-    const {
-      PluginSystem,
-      SyncHook,
-      AsyncHook,
-      SyncWaterfallHook,
-      AsyncParallelHook,
-      AsyncWaterfallHook,
-    } = HooksPlugin;
+    Object.assign(window, window.HooksPlugin);
 
-    // ...
+    console.log('All APIs have been placed on the window and can be used directly, such as `new PluginSystem({})`.');
+    console.log('所有的 API 都已经放在 window 上，可以直接使用，比如 `new PluginSystem({})`。');
+    console.log(window.HooksPlugin);
   </script>
 </body>
 </html>

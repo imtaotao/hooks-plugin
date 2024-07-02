@@ -8,6 +8,11 @@
 Plugin system built through various hooks, inspired by [tapable](https://github.com/webpack/tapable). it is very small, but it has fully-fledged and powerful TypeScript type hinting/type checking. If your project has a microkernel architecture, then this library will be very suitable for you.
 
 
+### Debugging platform
+
+> https://imtaotao.github.io/hooks-plugin/
+
+
 ## Hook list
 
 - `SyncHook`

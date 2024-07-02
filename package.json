@@ -1,11 +1,18 @@
 {
   "name": "hooks-plugin",
-  "version": "1.0.7",
+  "version": "1.1.0",
   "description": "A plugin system built through various hooks.",
   "main": "./dist/hooks.cjs.js",
   "unpkg": "./dist/hooks.umd.js",
   "module": "./dist/hooks.esm-bundler.js",
   "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/hooks.esm-bundler.js",
+      "require": "./dist/hooks.cjs.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
   "scripts": {
     "test": "jest",
     "dev": "ts-node ./test.ts",
@@ -53,6 +60,6 @@
     "typescript": "^4.5.5"
   },
   "dependencies": {
-    "aidly": "^1.1.5"
+    "aidly": "^1.2.3"
   }
 }
