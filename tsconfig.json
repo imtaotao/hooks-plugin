@@ -1,19 +1,17 @@
 {
   "compilerOptions": {
     "baseUrl": ".",
-    "rootDir": ".",
     "outDir": "dist",
+    "target": "ESNext",
     "module": "ESNext",
-    "target": "es6",
     "strict": true,
-    "resolveJsonModule": true,
-    "lib": ["es2018", "dom"],
-    "moduleResolution": "node",
     "allowJs": true,
-    "sourceMap": true,
+    "sourceMap": false,
     "declaration": true,
-    "noImplicitThis": true,
-    "esModuleInterop": true
+    "noImplicitAny": true,
+    "esModuleInterop": true,
+    "lib": ["es2018", "dom"],
+    "moduleResolution": "node"
   },
   "ts-node": {
     "compilerOptions": {
