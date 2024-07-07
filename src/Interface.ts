@@ -1,4 +1,5 @@
 import type { createTaskId } from './Utils';
+import type { PluginSystem } from './PluginSystem';
 
 // Plugins can extend this type themselves
 export interface PluginApis extends Record<string, Record<string, unknown>> {}
@@ -45,6 +46,18 @@ export interface PerformanceEvent {
 export type ListenErrorEvent = ExecErrorEvent & {
   tag: string;
   name: string;
+};
+
+export type HookOn<
+  T extends PluginSystem<Record<string, any>>,
+  K extends keyof T['lifecycle'],
+> = Parameters<T['lifecycle'][K]['on']>[1];
+
+export type HooksOn<
+  T extends PluginSystem<Record<string, any>>,
+  K extends Array<keyof T['lifecycle']>,
+> = {
+  [P in K[number]]: HookOn<T, P>;
 };
 
 export type TaskId = ReturnType<typeof createTaskId>;

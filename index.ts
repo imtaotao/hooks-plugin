@@ -8,6 +8,8 @@ export type { DebuggerOptions } from "./src/Debugger";
 export type {
   TaskId,
   HookType,
+  HookOn,
+  HooksOn,
   Plugin,
   PluginApis,
   EachEvent,

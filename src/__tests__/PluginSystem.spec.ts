@@ -567,4 +567,22 @@ describe('PluginSystem', () => {
       expect(res).toBe(undefined);
     })();
   });
+
+  it('pickLifyCycle', () => {
+    const plSys = new PluginSystem({
+      syncHook: new SyncHook<[string, number]>(),
+      asyncHook: new AsyncHook<[string, number]>(),
+      asyncParallelHook: new AsyncParallelHook<[{ value: number }]>(),
+      syncWaterfallHook: new SyncWaterfallHook<{ value: number }>(),
+      asyncWaterfallHook: new AsyncWaterfallHook<{ value: number }>(),
+    });
+
+    const p = plSys.pickLifyCycle(['asyncHook', 'asyncWaterfallHook']);
+    expect(Object.keys(p)).toEqual(['asyncHook', 'asyncWaterfallHook']);
+    expect(p !== plSys.lifecycle).toBe(true);
+    expect(p.asyncHook === plSys.lifecycle.asyncHook).toBe(true);
+    expect(p.asyncWaterfallHook === plSys.lifecycle.asyncWaterfallHook).toBe(
+      true,
+    );
+  });
 });

@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       aidly:
-        specifier: ^1.2.3
-        version: 1.2.3
+        specifier: ^1.4.0
+        version: 1.4.0
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^21.0.1
@@ -470,8 +470,8 @@ packages:
     resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
     engines: {node: '>= 6.0.0'}
 
-  aidly@1.2.3:
-    resolution: {integrity: sha512-cwuOcOCoQxM/8L5iPfgGGZdlmc/V5Bkx+8OBc3tOXVOi3kAOLrApjZ+CbUamAIWFx681XzyqtFTJWUVuqxkXFw==}
+  aidly@1.4.0:
+    resolution: {integrity: sha512-2PqzwC/MCpYHzh8kaIM+L6wEAO6FcYYbhR0aCd7WW3C7eNIH4vSKoOek4eajtVZOp/2zR+Dszz9rt/wObT/skw==}
 
   ansi-escapes@4.3.2:
     resolution: {integrity: sha512-gKXj5ALrKWQLsYG9jlTRmR/xKluxHV+Z9QEwNIgCfM1/uwPMCuzVVnh5mwTd+OuBZcwSIMbqssNWRm1lE51QaQ==}
@@ -2449,7 +2449,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  aidly@1.2.3:
+  aidly@1.4.0:
     dependencies:
       small-queue: 1.0.1
 

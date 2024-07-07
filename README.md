@@ -35,6 +35,7 @@ Plugin system built through various hooks, inspired by [tapable](https://github.
 - `plSys.listenLock`
 - `plSys.listenError`
 - `plSys.getPluginApis`
+- `plSys.pickLifyCycle`
 - `plSys.clone`
 - `plSys.debug`
 - `plSys.performance`

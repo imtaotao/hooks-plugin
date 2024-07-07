@@ -1,4 +1,4 @@
-import { assert, hasOwn, isPlainObject } from 'aidly';
+import { assert, pick, hasOwn, isPlainObject } from 'aidly';
 import { PERFORMANCE_PLUGIN_PREFIX } from './Utils';
 import { SyncHook } from './SyncHook';
 import { AsyncHook } from './AsyncHook';
@@ -305,6 +305,13 @@ export class PluginSystem<T extends Record<string, unknown>> {
       rm(plugin.hooks);
       rm(plugin.onceHooks);
     }
+  }
+
+  /**
+   * Select some of the lifycycle hooks.
+   */
+  pickLifyCycle<T extends keyof this['lifecycle']>(keys: Array<T>) {
+    return pick(this.lifecycle, keys);
   }
 
   /**
