@@ -304,6 +304,7 @@ export class PluginSystem<T extends Record<string, unknown>> {
       };
       rm(plugin.hooks);
       rm(plugin.onceHooks);
+      delete this.plugins[pluginName];
     }
   }
 

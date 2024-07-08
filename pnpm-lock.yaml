@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       aidly:
-        specifier: ^1.4.0
-        version: 1.4.0
+        specifier: ^1.4.1
+        version: 1.4.1
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^26.0.1
@@ -542,8 +542,8 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  aidly@1.4.0:
-    resolution: {integrity: sha512-2PqzwC/MCpYHzh8kaIM+L6wEAO6FcYYbhR0aCd7WW3C7eNIH4vSKoOek4eajtVZOp/2zR+Dszz9rt/wObT/skw==}
+  aidly@1.4.1:
+    resolution: {integrity: sha512-l2Dc015muQPActXp60pZJNXUDcODZTcdPNe93wZDNC5fOjYkeoS94jJuCscYolNUbJhXIE5TFy6pMJrOnHTQMg==}
 
   ansi-escapes@4.3.2:
     resolution: {integrity: sha512-gKXj5ALrKWQLsYG9jlTRmR/xKluxHV+Z9QEwNIgCfM1/uwPMCuzVVnh5mwTd+OuBZcwSIMbqssNWRm1lE51QaQ==}
@@ -2339,7 +2339,7 @@ snapshots:
 
   acorn@8.12.0: {}
 
-  aidly@1.4.0:
+  aidly@1.4.1:
     dependencies:
       small-queue: 1.0.1
 
