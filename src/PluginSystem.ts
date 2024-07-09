@@ -1,5 +1,5 @@
-import { assert, pick, hasOwn, isPlainObject } from 'aidly';
-import { PERFORMANCE_PLUGIN_PREFIX } from './Utils';
+import { assert, uuid, pick, omit, hasOwn, isPlainObject } from 'aidly';
+import { INTERNAL, PERFORMANCE_PLUGIN_PREFIX } from './Utils';
 import { SyncHook } from './SyncHook';
 import { AsyncHook } from './AsyncHook';
 import { AsyncParallelHook } from './AsyncParallelHook';
@@ -12,6 +12,7 @@ import type {
   HookType,
   Plugin,
   PluginApis,
+  RefinePlugin,
   EachCallback,
   ExecErrorEvent,
   ListenErrorEvent,
@@ -242,11 +243,25 @@ export class PluginSystem<T extends Record<string, unknown>> {
   }
 
   /**
+   * Register refine plugin.
+   */
+  useRefine<P extends RefinePlugin<T>>(plugin: P): P;
+  useRefine<F extends (plSys: this) => RefinePlugin<T>>(
+    plugin: F,
+  ): ReturnType<F>;
+  useRefine(plugin: unknown) {
+    return this.use(plugin as Plugin<T>, INTERNAL);
+  }
+
+  /**
    * Register plugin.
    */
-  use<P extends Plugin<T>>(plugin: P): P;
-  use<F extends (plSys: this) => Plugin<T>>(plugin: F): ReturnType<F>;
-  use(plugin: Plugin<T> | ((plSys: this) => Plugin<T>)) {
+  use<P extends Plugin<T>>(plugin: P, _flag?: symbol): P;
+  use<F extends (plSys: this) => Plugin<T>>(
+    plugin: F,
+    _flag?: symbol,
+  ): ReturnType<F>;
+  use(plugin: Plugin<T> | ((plSys: this) => Plugin<T>), _flag?: symbol) {
     assert(
       !this._locked,
       `The plugin system is locked and new plugins cannot be added${
@@ -255,6 +270,14 @@ export class PluginSystem<T extends Record<string, unknown>> {
     );
     if (typeof plugin === 'function') plugin = plugin(this);
     assert(isPlainObject(plugin), 'Invalid plugin configuration.');
+    // Simplified version of the input
+    if (_flag === INTERNAL) {
+      plugin = {
+        version: plugin.version,
+        name: plugin.name || uuid(),
+        hooks: omit(plugin, ['name', 'version']),
+      };
+    }
     const { name } = plugin;
     assert(name && typeof name === 'string', 'Plugin must provide a "name".');
     assert(!this.isUsed(name), `Repeat to register plugin hooks "${name}".`);

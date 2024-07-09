@@ -6,18 +6,22 @@ export interface PluginApis extends Record<string, Record<string, unknown>> {}
 
 export interface Plugin<
   T extends Record<string, any>,
-  K = Record<string, unknown>,
+  U = Record<string, unknown>,
 > {
   name: string;
   hooks: {
-    [k in keyof T]?: Parameters<T[k]['on']>[1];
+    [K in keyof T]?: Parameters<T[K]['on']>[1];
   };
-  apis?: K;
+  apis?: U;
   version?: string;
   onceHooks?: {
-    [k in keyof T]?: Parameters<T[k]['on']>[1];
+    [K in keyof T]?: Parameters<T[K]['on']>[1];
   };
 }
+export type RefinePlugin<T extends Record<string, any>> = Partial<
+  Pick<Plugin<T>, 'name' | 'version'>
+> &
+  Plugin<T>['hooks'];
 
 export interface ExecErrorEvent {
   tag?: string;

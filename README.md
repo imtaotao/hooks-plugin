@@ -25,6 +25,7 @@ Plugin system built through various hooks, inspired by [tapable](https://github.
 ## Apis
 
 - `plSys.use`
+- `plSys.useRefine`
 - `plSys.remove`
 - `plSys.create`
 - `plSys.isUsed`
@@ -72,6 +73,14 @@ plSys.use(function(plSys) {
     ...
   }
 })
+
+// If you want to simplify registering plugins
+const plugin = plSys.useRefine({
+  a(a, b) {
+    console.log(a, b); // 'str', 1
+  },
+})
+console.log(plugin.name); // Plugin name is a uuid created automatically
 
 // Trigger hook
 plSys.lifecycle.a.emit("str", 1);

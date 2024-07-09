@@ -88,23 +88,23 @@ describe('PluginSystem', () => {
 
     expect(() => {
       plSys.use([] as any);
-    }).toThrowError();
+    }).toThrow();
 
     expect(() => {
       plSys.use({} as any);
-    }).toThrowError();
+    }).toThrow();
 
     expect(() => {
       plSys.use({ name: 1 } as any);
-    }).toThrowError();
+    }).toThrow();
 
     expect(() => {
       plSys.remove('');
-    }).toThrowError();
+    }).toThrow();
 
     expect(() => {
       plSys.remove('a');
-    }).not.toThrowError();
+    }).not.toThrow();
 
     expect(Object.keys(plSys.lifecycle)).toEqual(['a', 'b']);
   });
@@ -121,7 +121,7 @@ describe('PluginSystem', () => {
           b() {},
         },
       } as any);
-    }).toThrowError();
+    }).toThrow();
   });
 
   it('Check once hooks', () => {
@@ -211,7 +211,16 @@ describe('PluginSystem', () => {
         name: 'test',
         hooks: {},
       });
-    }).toThrowError();
+    }).toThrow();
+
+    plSys.remove('test');
+
+    expect(() => {
+      plSys.use({
+        name: 'test',
+        hooks: {},
+      });
+    }).not.toThrow();
   });
 
   it('Plugin System lock and unlock', () => {
@@ -227,57 +236,57 @@ describe('PluginSystem', () => {
 
     expect(() => {
       plSys.use({ name: 'test1', hooks: {} });
-    }).toThrowError();
+    }).toThrow();
 
     expect(() => {
       plSys.remove('test');
-    }).toThrowError();
+    }).toThrow();
 
     expect(() => {
       plSys.beforeEach(() => {});
-    }).toThrowError();
+    }).toThrow();
 
     expect(() => {
       plSys.afterEach(() => {});
-    }).toThrowError();
+    }).toThrow();
 
     expect(() => {
       plSys.debug();
-    }).toThrowError();
+    }).toThrow();
 
     expect(() => {
       close();
-    }).toThrowError();
+    }).toThrow();
 
     expect(() => {
       plSys.performance('0');
-    }).toThrowError();
+    }).toThrow();
 
     expect(() => {
       monitor.close();
-    }).toThrowError();
+    }).toThrow();
 
     expect(() => {
       plSys.lifecycle.a.on(() => {});
-    }).toThrowError();
+    }).toThrow();
 
     plSys.unlock();
 
     expect(() => {
       plSys.use({ name: 'test1', hooks: {} });
-    }).not.toThrowError();
+    }).not.toThrow();
 
     expect(() => {
       plSys.remove('test');
-    }).not.toThrowError();
+    }).not.toThrow();
 
     expect(() => {
       close();
-    }).not.toThrowError();
+    }).not.toThrow();
 
     expect(() => {
       monitor.close();
-    }).not.toThrowError();
+    }).not.toThrow();
   });
 
   it('Data check', () => {
@@ -492,7 +501,7 @@ describe('PluginSystem', () => {
 
     expect(() => {
       (plSys as any).isUsed();
-    }).toThrowError();
+    }).toThrow();
 
     expect(plSys.isUsed('test')).toBe(true);
     expect(plSys.isUsed('test1')).toBe(false);
@@ -568,7 +577,7 @@ describe('PluginSystem', () => {
     })();
   });
 
-  it('pickLifyCycle', () => {
+  it('Check `pickLifyCycle`', () => {
     const plSys = new PluginSystem({
       syncHook: new SyncHook<[string, number]>(),
       asyncHook: new AsyncHook<[string, number]>(),
@@ -584,5 +593,21 @@ describe('PluginSystem', () => {
     expect(p.asyncWaterfallHook === plSys.lifecycle.asyncWaterfallHook).toBe(
       true,
     );
+  });
+
+  it('Check `useRefine`', () => {
+    let i = 0;
+    const p = new PluginSystem({
+      a: new SyncHook<[number], null>(null),
+    });
+    p.useRefine({
+      a(v) {
+        i++;
+        expect(v === 1).toBe(true);
+        expect(this === null).toBe(true);
+      },
+    });
+    p.lifecycle.a.emit(1);
+    expect(i === 1).toBe(true);
   });
 });

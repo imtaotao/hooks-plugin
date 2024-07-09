@@ -12,6 +12,7 @@ export type {
   HooksOn,
   Plugin,
   PluginApis,
+  RefinePlugin,
   EachEvent,
   Callback,
   PerformanceEvent,
