@@ -1,6 +1,6 @@
 {
   "name": "hooks-plugin",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "A plugin system built through various hooks.",
   "main": "./dist/hooks.cjs.js",
   "unpkg": "./dist/hooks.umd.js",
@@ -10,7 +10,8 @@
     ".": {
       "import": {
         "types": "./dist/index.d.ts",
-        "default": "./esm.mjs"
+        "node": "./dist/hooks.esm-bundler.mjs",
+        "default": "./dist/hooks.esm-bundler.js"
       },
       "require": {
         "types": "./dist/index.d.ts",
@@ -18,13 +19,13 @@
       }
     }
   },
-  "files": ["esm.mjs", "dist"],
+  "files": ["dist"],
   "scripts": {
     "test": "jest",
     "dev": "ts-node ./test.ts",
     "test:cov": "jest --coverage",
     "build": "rimraf ./dist && rollup --config && rimraf ./dist/src/__tests__",
-    "format": "prettier --write --parser typescript \"(src|dist)/**/*.(js|ts?(x))\""
+    "format": "prettier --write --parser typescript \"(src|dist)/**/*.((m)?js|ts?(x))\""
   },
   "author": "imtaotao",
   "keywords": [
@@ -65,6 +66,6 @@
     "typescript": "^4.5.5"
   },
   "dependencies": {
-    "aidly": "^1.4.5"
+    "aidly": "^1.4.6"
   }
 }
