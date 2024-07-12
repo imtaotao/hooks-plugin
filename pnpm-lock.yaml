@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       aidly:
-        specifier: ^1.4.3
-        version: 1.4.3
+        specifier: ^1.4.5
+        version: 1.4.5
     devDependencies:
       '@rollup/plugin-commonjs':
         specifier: ^26.0.1
@@ -542,8 +542,8 @@ packages:
     engines: {node: '>=0.4.0'}
     hasBin: true
 
-  aidly@1.4.3:
-    resolution: {integrity: sha512-Ph/iNkDQnpa0a2q/ob4B5pJl9uI5m5rDYIasaOgd/YixCqeFfDy1RgEaeauT79kt98WypYM3dVMy+1RI6Ps1ZQ==}
+  aidly@1.4.5:
+    resolution: {integrity: sha512-iumiDNY5gsNCblZ6LHWcZKdx533WzJ6+cjB9ZGvBxoapho5kcHXLLPJwJeTewXKhxHVVaEUL9FvSXuQ0F4qRvA==}
 
   ansi-escapes@4.3.2:
     resolution: {integrity: sha512-gKXj5ALrKWQLsYG9jlTRmR/xKluxHV+Z9QEwNIgCfM1/uwPMCuzVVnh5mwTd+OuBZcwSIMbqssNWRm1lE51QaQ==}
@@ -1524,8 +1524,8 @@ packages:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
     engines: {node: '>=8'}
 
-  small-queue@1.0.1:
-    resolution: {integrity: sha512-+T/HHAoiyDIyBwR9Utt/0q7WZhWeA6zBf5O+DUs97gJkme9IgX1nkgfa8W5VfF3PWPoZ0dZqjUq6eBFjc4gUsQ==}
+  small-queue@1.1.1:
+    resolution: {integrity: sha512-+29gk0aVAE5UHaXK4u90MiC2LMcLrRr6UajYw5VPrrJ5vdTHM7e7zlSa0kZgZrJO5QWd/Y363kb/0Wcvrvw6/Q==}
 
   source-map-support@0.5.13:
     resolution: {integrity: sha512-SHSKFHadjVA5oR4PPqhtAVdcBWwRYVd6g6cAXnIbRiIwc2EhPrTuKUBdSLvlEKyIP3GCf89fltvcZiP9MMFA1w==}
@@ -2339,9 +2339,9 @@ snapshots:
 
   acorn@8.12.0: {}
 
-  aidly@1.4.3:
+  aidly@1.4.5:
     dependencies:
-      small-queue: 1.0.1
+      small-queue: 1.1.1
 
   ansi-escapes@4.3.2:
     dependencies:
@@ -3475,7 +3475,7 @@ snapshots:
 
   slash@3.0.0: {}
 
-  small-queue@1.0.1: {}
+  small-queue@1.1.1: {}
 
   source-map-support@0.5.13:
     dependencies:
