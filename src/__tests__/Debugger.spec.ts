@@ -295,7 +295,7 @@ describe('GetOtherPlugin', () => {
         expect(data.tag).toBe('tag');
         expect(typeof data.e.time).toBe('number');
         expect(data.e.events.length).toBe(2);
-        expect(data.e.equeValue).toBe('n');
+        expect(data.e.equalValue).toBe('n');
         expect(data.e.endArgs).toEqual([{ name: 'n' }]);
       },
     });

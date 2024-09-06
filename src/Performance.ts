@@ -67,7 +67,7 @@ export function createPerformance<T extends Record<string, unknown>>(
                   endArgs: args,
                   endContext: this,
                   events: [sk, ek],
-                  equeValue: value,
+                  equalValue: value,
                   time: now() - prevTime,
                 });
               }

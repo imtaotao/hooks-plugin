@@ -41,7 +41,7 @@ export interface EachEvent<T, C> {
 
 export interface PerformanceEvent {
   time: number;
-  equeValue: unknown;
+  equalValue: unknown;
   endContext: unknown;
   endArgs: Array<unknown>;
   events: [string, string];

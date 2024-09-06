@@ -25,7 +25,7 @@ describe('Performance', () => {
       expect(e.events).toEqual(['a', 'a']);
       expect(e.endContext).toBe('');
       expect(e.endArgs).toEqual([{ name: 'n1' }]);
-      expect(e.equeValue).toBe('n1');
+      expect(e.equalValue).toBe('n1');
     });
 
     p.monitor('a', 'b').on((e) => {
@@ -33,7 +33,7 @@ describe('Performance', () => {
       expect(typeof e.time === 'number').toBe(true);
       expect(e.events).toEqual(['a', 'b']);
       expect(e.endContext).toBe('');
-      expect(e.equeValue === 'n' || e.equeValue === 'n1').toBe(true);
+      expect(e.equalValue === 'n' || e.equalValue === 'n1').toBe(true);
     });
 
     plSys.lifecycle.a.emit({ name: 'n1' });
@@ -65,7 +65,7 @@ describe('Performance', () => {
       i++;
       expect(typeof e.time === 'number').toBe(true);
       expect(e.events).toEqual(['a', 'a']);
-      expect(e.equeValue).toBe('n1');
+      expect(e.equalValue).toBe('n1');
       expect(e.endContext).toBe(null);
     });
 
@@ -73,7 +73,7 @@ describe('Performance', () => {
       i++;
       expect(typeof e.time === 'number').toBe(true);
       expect(e.events).toEqual(['a', 'b']);
-      expect(e.equeValue).toBe('n');
+      expect(e.equalValue).toBe('n');
       expect(e.endContext).toBe(null);
     });
 
