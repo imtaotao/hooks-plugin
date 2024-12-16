@@ -1,4 +1,4 @@
-import { now, isPromise } from 'aidly';
+import { isPromise } from 'aidly';
 import { SyncHook } from './SyncHook';
 import { createTaskId } from './Utils';
 import type { TaskId, ArgsType } from './Interface';
@@ -30,11 +30,11 @@ export class AsyncParallelHook<
           Promise.resolve().then(() => {
             const tag = this.tags.get(fn);
             if (map && tag) {
-              map[tag] = now();
+              map[tag] = Date.now();
             }
             const record = () => {
               if (map && tag) {
-                map[tag] = now() - map[tag];
+                map[tag] = Date.now() - map[tag];
               }
             };
             try {

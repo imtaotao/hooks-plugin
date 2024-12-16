@@ -1,4 +1,4 @@
-import { now, assert, isPlainObject } from 'aidly';
+import { assert, isPlainObject } from 'aidly';
 import { SyncHook } from './SyncHook';
 import { createTaskId, checkReturnData } from './Utils';
 
@@ -26,11 +26,11 @@ export class SyncWaterfallHook<
       for (const fn of this.listeners) {
         const tag = this.tags.get(fn);
         if (map && tag) {
-          map[tag] = now();
+          map[tag] = Date.now();
         }
         const record = () => {
           if (map && tag) {
-            map[tag] = now() - map[tag];
+            map[tag] = Date.now() - map[tag];
           }
         };
         try {

@@ -1,4 +1,4 @@
-import { now, assert } from 'aidly';
+import { assert } from 'aidly';
 import { INTERNAL, createTaskId } from './Utils';
 import type {
   TaskId,
@@ -135,11 +135,11 @@ export class SyncHook<T extends Array<unknown>, C = null, K = void> {
       this.listeners.forEach((fn) => {
         const tag = this.tags.get(fn);
         if (map && tag) {
-          map[tag] = now();
+          map[tag] = Date.now();
         }
         const record = () => {
           if (map && tag) {
-            map[tag] = now() - map[tag];
+            map[tag] = Date.now() - map[tag];
           }
         };
         try {

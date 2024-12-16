@@ -1,4 +1,3 @@
-import { now } from 'aidly';
 import { SyncHook } from './SyncHook';
 import { createTaskId } from './Utils';
 import type { TaskId, ArgsType, CallbackReturnType } from './Interface';
@@ -35,11 +34,11 @@ export class AsyncHook<T extends Array<unknown>, C = null> extends SyncHook<
           const fn = ls[i++];
           const tag = this.tags.get(fn);
           if (map && tag) {
-            map[tag] = now();
+            map[tag] = Date.now();
           }
           const record = () => {
             if (map && tag) {
-              map[tag] = now() - map[tag];
+              map[tag] = Date.now() - map[tag];
             }
           };
           try {

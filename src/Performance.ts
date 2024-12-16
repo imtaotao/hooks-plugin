@@ -1,4 +1,4 @@
-import { now, assert, isPrimitiveValue } from 'aidly';
+import { assert, isPrimitiveValue } from 'aidly';
 import { SyncHook } from './SyncHook';
 import type { PluginSystem } from './PluginSystem';
 import type { PerformanceEvent } from './Interface';
@@ -68,7 +68,7 @@ export function createPerformance<T extends Record<string, unknown>>(
                   endContext: this,
                   events: [sk, ek],
                   equalValue: value,
-                  time: now() - prevTime,
+                  time: Date.now() - prevTime,
                 });
               }
             }
@@ -81,7 +81,7 @@ export function createPerformance<T extends Record<string, unknown>>(
           if (value !== INVALID_VALUE) {
             let obj;
             const k = `${id}_${sk}`;
-            const t = now();
+            const t = Date.now();
 
             if (isPrimitiveValue(value)) {
               obj = records2[value as any];

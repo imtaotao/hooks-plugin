@@ -1,4 +1,3 @@
-import { now } from 'aidly';
 import { isBrowser } from './Utils';
 import type { PluginSystem } from './PluginSystem';
 import type {
@@ -85,7 +84,7 @@ export function createDebugger<T extends Record<string, unknown>>(
   };
 
   const unsubscribeBefore = plSys.beforeEach((e) => {
-    map[e.id] = { t: now() };
+    map[e.id] = { t: Date.now() };
     if (typeof receiver !== 'function') {
       console.time(prefix(e));
       if (group) console.groupCollapsed(e.name);
@@ -101,7 +100,7 @@ export function createDebugger<T extends Record<string, unknown>>(
         return;
       }
     } else if (typeof filter === 'function') {
-      t = now() - map[e.id].t;
+      t = Date.now() - map[e.id].t;
       if (filter({ e, tag, time: t })) {
         if (group) console.groupEnd();
         return;
@@ -110,7 +109,7 @@ export function createDebugger<T extends Record<string, unknown>>(
 
     if (typeof receiver === 'function') {
       if (t === null) {
-        t = now() - map[e.id].t;
+        t = Date.now() - map[e.id].t;
       }
       receiver({ e, tag, time: t });
     } else {
