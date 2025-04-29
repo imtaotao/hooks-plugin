@@ -1,4 +1,4 @@
-import { isPromise } from 'aidly';
+import { isPromiseLike } from 'aidly';
 import { SyncHook } from './SyncHook';
 import { createTaskId } from './Utils';
 import type { TaskId, ArgsType } from './Interface';
@@ -39,7 +39,7 @@ export class AsyncParallelHook<
             };
             try {
               const res = fn.apply(this.context, data);
-              if (isPromise(res)) {
+              if (isPromiseLike(res)) {
                 // `Thenable` may not provide `catch` method,
                 // It needs to be wrapped with a promise.
                 return Promise.resolve(res).catch((e) => {
