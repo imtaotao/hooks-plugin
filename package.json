@@ -1,6 +1,6 @@
 {
   "name": "hooks-plugin",
-  "version": "1.3.3",
+  "version": "1.3.4",
   "description": "A plugin system built through various hooks.",
   "main": "./dist/hooks.cjs.js",
   "unpkg": "./dist/hooks.umd.js",
@@ -66,6 +66,6 @@
     "typescript": "^4.5.5"
   },
   "dependencies": {
-    "aidly": "^1.22.0"
+    "aidly": "^1.36.0"
   }
 }
